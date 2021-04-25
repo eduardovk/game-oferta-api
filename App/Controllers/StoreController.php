@@ -15,8 +15,7 @@ final class StoreController
         $storeDAO = new StoreDAO();
         $stores = $storeDAO->getAllStores();
 
-        $res = $res->withJson("Teste");
-        // $res = $res->withJson($stores);
+        $res = $res->withJson($stores);
         return $res;
     }
 }
