@@ -24,7 +24,6 @@ class StoreDAO extends Connection
                 }
             }
             $where .= ") ";
-            echo ($where);
         }
 
         $stores = $this->pdo

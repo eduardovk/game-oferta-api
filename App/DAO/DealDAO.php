@@ -24,7 +24,6 @@ class DealDAO extends Connection
                 }
             }
             $where .= ") ";
-            echo ($where);
         }
 
         $deals = $this->pdo

@@ -36,7 +36,6 @@ class GameDAO extends Connection
                 }
             }
             $where .= ") ";
-            echo ($where);
         }
 
         $query = $this->pdo->prepare('SELECT * FROM game_deals WHERE game_plain = :plain' . $where);
