@@ -22,23 +22,13 @@ class GameDAO extends Connection
     //retorna o jogo informado pela plain e suas ofertas ativas
     public function getGameByPlain($plain)
     {
-
         //verifica se ha  variavel de ambiente para filtrar as lojas
-        //se houver, quebra a string de ids e cria a clausula where
         $where = "";
         if (getenv('FILTER_STORES') && getenv('FILTER_STORES') != "") {
-            $where = " AND (";
-            $arr = explode(",", '5,11,14,33,35,37,42,43');
-            for ($i = 0; $i < sizeof($arr); $i++) {
-                $where .= (" id_store = " . $arr[$i]);
-                if ($i < (sizeof($arr) - 1)) {
-                    $where .= " OR";
-                }
-            }
-            $where .= ") ";
+            $where = "AND id_store IN (" + getenv('FILTER_STORES') + ")";
         }
 
-        $query = $this->pdo->prepare('SELECT * FROM game_deals WHERE game_plain = :plain' . $where);
+        $query = $this->pdo->prepare('SELECT * FROM game_deals WHERE game_plain = :plain ' . $where);
         $query->bindValue(':plain', $plain);
         $run = $query->execute();
         $game = $query->fetchAll(\PDO::FETCH_ASSOC);
