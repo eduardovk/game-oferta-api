@@ -14,7 +14,7 @@ class StoreDAO extends Connection
         //verifica se ha  variavel de ambiente para filtrar as lojas
         $where = "";
         if (getenv('FILTER_STORES') && getenv('FILTER_STORES') != "") {
-            $where = "WHERE  id IN (" + getenv('FILTER_STORES') + ")";
+            $where = "WHERE  id IN (" . getenv('FILTER_STORES') . ")";
         }
 
         $stores = $this->pdo

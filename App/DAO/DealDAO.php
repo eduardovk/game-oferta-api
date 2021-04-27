@@ -14,7 +14,7 @@ class DealDAO extends Connection
         //verifica se ha  variavel de ambiente para filtrar as lojas
         $where = "";
         if (getenv('FILTER_STORES') && getenv('FILTER_STORES') != "") {
-            $where = "WHERE id_store IN (" + getenv('FILTER_STORES') + ")";
+            $where = "WHERE id_store IN (" . getenv('FILTER_STORES') . ")";
         }
 
         $deals = $this->pdo

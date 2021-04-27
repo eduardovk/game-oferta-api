@@ -25,7 +25,7 @@ class GameDAO extends Connection
         //verifica se ha  variavel de ambiente para filtrar as lojas
         $where = "";
         if (getenv('FILTER_STORES') && getenv('FILTER_STORES') != "") {
-            $where = "AND id_store IN (" + getenv('FILTER_STORES') + ")";
+            $where = "AND id_store IN (" . getenv('FILTER_STORES') . ")";
         }
 
         $query = $this->pdo->prepare('SELECT * FROM game_deals WHERE game_plain = :plain ' . $where);
