@@ -11,6 +11,7 @@ final class GameController
 {
 
     //retorna todos os jogos ativos no bd
+    //Ex.: game-oferta-api/games
     public function getGames(Request $req, Response $res, array $args): Response
     {
         $gameDAO = new GameDAO();
@@ -20,6 +21,7 @@ final class GameController
     }
 
     //retorna informacoes sobre o jogo atraves da plain informada
+    //Ex.: game-oferta-api/game/doom
     public function getGameByPlain(Request $req, Response $res, array $args): Response
     {
         $gameDAO = new GameDAO();
@@ -30,6 +32,7 @@ final class GameController
     }
 
     //retorna o jogo informado pela plain e suas ofertas ativas
+    //Ex.: game-oferta-api/game_deals/falloutii?all_deals=false
     public function getGameDealsByPlain(Request $req, Response $res, array $args): Response
     {
         $plain = $args['plain']; //recebe plain como parametro get da url
@@ -69,6 +72,51 @@ final class GameController
             }
         }
         $res = $res->withJson($gameDeals);
+        return $res;
+    }
+
+    //retorna deals ativas de todos os jogos de acordo com o limite
+    //e o criterio de ordem especificados nos parametros get na url
+    //Ex.: game-oferta-api/games_deals?limit=5&orderby=id_game&order=DESC
+    public function getGamesDeals(Request $req, Response $res, array $args): Response
+    {
+        $params = $req->getQueryParams(); //recebe parametros get da url
+        $limit = 20; //limite de jogos caso parametro nao seja informado
+        if (isset($params['limit']) && $params['limit'] > 0 && $params['limit'] <= 20) {
+            $limit = $params['limit']; //recebe parametro limit
+        }
+        //verifica se ha parametros orderby e order, caso contrario utiliza padrao
+        $orderBy = isset($params['orderby']) ? $params['orderby'] : 'id_game';
+        $order = (isset($params['order']) && $params['order'] == 'ASC') ? 'ASC' : 'DESC';
+        $games = []; //cria array de jogos selecionados
+        $gameDAO = new GameDAO();
+        //recebe do bd um array com ids de jogos que possuem deals ativas conforme limite e criterio de ordem
+        $ids = $gameDAO->getIDsArray($limit, $orderBy, $order);
+        $results = $gameDAO->getGamesDealsByIDArray($ids, $orderBy, $order);
+        foreach ($results as $result) { //para cada resultado da query
+            if (!isset($games[$result['game_plain']])) { //caso game ainda nao esteja no array
+                $games[$result['game_plain']] = array( //adiciona game no array com suas informacoes
+                    'plain' => $result['game_plain'],
+                    'name' => $result['game_name'],
+                    'id' => $result['id_game'],
+                    'cover' => $result['game_cover'],
+                    'deals' => array() //array de ofertas do jogo
+                );
+            }
+            //estrutura informacoes da deal
+            $dealInfo = array(
+                'id_deal' => $result['id'],
+                'id_store' => $result['id_store'],
+                'store_name' => $result['store_name'],
+                'store_plain' => $result['id_itad'],
+                'price_old' => $result['price_old'],
+                'price_new' => $result['price_new'],
+                'price_cut' => $result['price_cut']
+            );
+            //insere informacoes da deal no array deals do jogo
+            array_push($games[$result['game_plain']]['deals'], $dealInfo);
+        }
+        $res = $res->withJson($games);
         return $res;
     }
 }

@@ -10,11 +10,12 @@ use \Slim\Http\Response as Response;
 final class StoreController
 {
 
+    //retorna todas as lojas do bd
+    //Ex.: game-oferta-api/stores
     public function getStores(Request $req, Response $res, array $args): Response
     {
         $storeDAO = new StoreDAO();
         $stores = $storeDAO->getAllStores();
-
         $res = $res->withJson($stores);
         return $res;
     }

@@ -21,6 +21,7 @@ $app->add(function ($req, $res, $next) {
 
 $app->get('/games', '\App\Controllers\GameController:getGames');
 $app->get('/game/{plain}', '\App\Controllers\GameController:getGameByPlain');
+$app->get('/games_deals', '\App\Controllers\GameController:getGamesDeals');
 $app->get('/game_deals/{plain}', '\App\Controllers\GameController:getGameDealsByPlain');
 
 $app->get('/stores', '\App\Controllers\StoreController:getStores');
