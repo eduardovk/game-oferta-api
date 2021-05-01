@@ -87,7 +87,7 @@ final class GameController
         }
         //verifica se ha parametros orderby e order, caso contrario utiliza padrao
         $orderBy = isset($params['orderby']) ? $params['orderby'] : 'id_game';
-        $order = (isset($params['order']) && $params['order'] == 'ASC') ? 'ASC' : 'DESC';
+        $order = (isset($params['order']) && strtoupper($params['order']) == 'ASC') ? 'ASC' : 'DESC';
         $games = []; //cria array de jogos selecionados
         $gameDAO = new GameDAO();
         //recebe do bd um array com ids de jogos que possuem deals ativas conforme limite e criterio de ordem
