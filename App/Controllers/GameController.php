@@ -116,7 +116,12 @@ final class GameController
             //insere informacoes da deal no array deals do jogo
             array_push($games[$result['game_plain']]['deals'], $dealInfo);
         }
-        $res = $res->withJson($games);
+        //organiza em um novo array e devolve como resposta
+        $finalArray = array();
+        foreach ($games as $game) {
+            $finalArray[] = $game;
+        }
+        $res = $res->withJson($finalArray);
         return $res;
     }
 }
