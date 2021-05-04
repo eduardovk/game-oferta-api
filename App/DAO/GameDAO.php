@@ -78,9 +78,12 @@ class GameDAO extends Connection
         if (getenv('FILTER_STORES') && getenv('FILTER_STORES') != "") {
             $where = "AND id_store IN (" . getenv('FILTER_STORES') . ")";
         }
-        if ($orderBy != 'id_game') $orderBy = 'id_game'; //TO-DO adicionar outras formas de ordenacao
-        $query = $this->pdo->prepare('SELECT id_game FROM deals WHERE current_deal = 1'
-            . ' GROUP BY id_game ORDER BY ' . $orderBy . ' ' . $order . ' LIMIT :limit');
+        $allowed = array('id_game', 'rating_count'); //valores de orderby permitidos
+        //como pdo filtra somente values, verifica manualmente se nao ha tentativa de sql injection
+        if (!in_array($orderBy, $allowed)) $orderBy = 'rating_count';
+        $query = $this->pdo->prepare('SELECT d.id_game, g.rating_count FROM deals AS d '
+            . 'INNER JOIN games AS g ON (g.id = d.id_game) WHERE d.current_deal = 1 '
+            . 'GROUP BY d.id_game ORDER BY ' . $orderBy . ' ' . $order . ' LIMIT :limit');
         $query->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $run = $query->execute();
         $queryResult = $query->fetchAll(\PDO::FETCH_ASSOC);

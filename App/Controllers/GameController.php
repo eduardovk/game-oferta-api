@@ -86,7 +86,7 @@ final class GameController
             $limit = $params['limit']; //recebe parametro limit
         }
         //verifica se ha parametros orderby e order, caso contrario utiliza padrao
-        $orderBy = isset($params['orderby']) ? $params['orderby'] : 'id_game';
+        $orderBy = isset($params['orderby']) ? $params['orderby'] : 'rating_count';
         $order = (isset($params['order']) && strtoupper($params['order']) == 'ASC') ? 'ASC' : 'DESC';
         $games = []; //cria array de jogos selecionados
         $gameDAO = new GameDAO();
