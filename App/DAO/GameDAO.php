@@ -62,9 +62,12 @@ class GameDAO extends Connection
             $ids .= $id . ','; //adiciona id a string
         }
         $ids = substr($ids, 0, -1); //remove ultima virgula da string
-        if ($orderBy != 'id_game') $orderBy = 'id_game'; //TO-DO adicionar outras formas de ordenacao
-        $query = $this->pdo->prepare('SELECT * FROM game_deals WHERE id_game IN (' . $ids . ') ' . $where
-            . ' ORDER BY ' . $orderBy . ' ' . $order);
+        $allowed = array('id_game', 'rating_count'); //valores de orderby permitidos
+        //como pdo filtra somente values, verifica manualmente se nao ha tentativa de sql injection
+        if (!in_array($orderBy, $allowed)) $orderBy = 'rating_count';
+        $query = $this->pdo->prepare('SELECT d.*, g.rating_count FROM game_deals as d '
+            . 'INNER JOIN games AS g ON (d.id_game = g.id) WHERE d.id_game IN (' . $ids . ') '
+            . $where . ' ORDER BY ' . $orderBy . ' ' . $order);
         $run = $query->execute();
         $games = $query->fetchAll(\PDO::FETCH_ASSOC);
         return $games;
