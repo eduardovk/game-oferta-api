@@ -124,4 +124,15 @@ final class GameController
         $res = $res->withJson($finalArray);
         return $res;
     }
+
+    //retorna array com sugestoes de auto-complete de nome + plain
+    public function getNameSuggestions(Request $req, Response $res, array $args): Response
+    {
+        $params = $req->getQueryParams(); //recebe parametros get da url
+        $search = $params['search']; //recebe parametro search
+        $gameDAO = new GameDAO();
+        $nameSuggestions = $gameDAO->getNameSuggestions($search);
+        $res = $res->withJson($nameSuggestions);
+        return $res;
+    }
 }

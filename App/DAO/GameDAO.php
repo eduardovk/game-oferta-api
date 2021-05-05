@@ -96,4 +96,18 @@ class GameDAO extends Connection
         }
         return $ids;
     }
+
+    //retorna um array com sugestoes de auto-complete de nomes + plains
+    public function getNameSuggestions($search)
+    {
+        //caso o termo de pesquisa seja menor q 4 caracteres, utiliza query LIKE termo%
+        //caso tenha 4 caracteres ou mais, utilzia query LIKE %termo%
+        $search = strlen($search) < 4 ? $search . '%' : '%' . $search . '%';
+        $query = $this->pdo->prepare('SELECT id, name, plain FROM games WHERE name '
+            . 'LIKE :search OR alt_name_1 LIKE :search OR alt_name_2 LIKE :search ORDER BY rating_count DESC LIMIT 10');
+        $query->bindValue(':search', $search);
+        $run = $query->execute();
+        $queryResult = $query->fetchAll(\PDO::FETCH_ASSOC);
+        return $queryResult;
+    }
 }
