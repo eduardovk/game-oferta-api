@@ -129,7 +129,7 @@ final class GameController
     public function getNameSuggestions(Request $req, Response $res, array $args): Response
     {
         $params = $req->getQueryParams(); //recebe parametros get da url
-        $search = $params['search']; //recebe parametro search
+        $search = $params['term']; //recebe o termo de busca
         $gameDAO = new GameDAO();
         $nameSuggestions = $gameDAO->getNameSuggestions($search);
         $res = $res->withJson($nameSuggestions);
