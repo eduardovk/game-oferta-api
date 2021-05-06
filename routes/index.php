@@ -23,7 +23,8 @@ $app->get('/games', '\App\Controllers\GameController:getGames');
 $app->get('/game/{plain}', '\App\Controllers\GameController:getGameByPlain');
 $app->get('/games_deals', '\App\Controllers\GameController:getGamesDeals');
 $app->get('/game_deals/{plain}', '\App\Controllers\GameController:getGameDealsByPlain');
-$app->get('/search_game', '\App\Controllers\GameController:getNameSuggestions');
+$app->get('/search_name', '\App\Controllers\GameController:getNameSuggestions');
+$app->get('/search_game', '\App\Controllers\GameController:searchGame');
 
 $app->get('/stores', '\App\Controllers\StoreController:getStores');
 $app->get('/deals', '\App\Controllers\DealController:getDeals');

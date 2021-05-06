@@ -135,4 +135,19 @@ final class GameController
         $res = $res->withJson($nameSuggestions);
         return $res;
     }
+
+    //procura jogo pelo nome e retorna resultados
+    public function searchGame(Request $req, Response $res, array $args): Response
+    {
+        $params = $req->getQueryParams(); //recebe parametros get da url
+        $search = $params['term']; //recebe o termo de busca
+        $limit = 20; //limite de jogos caso parametro nao seja informado
+        if (isset($params['limit']) && $params['limit'] > 0 && $params['limit'] <= 20) {
+            $limit = $params['limit']; //recebe parametro limit
+        }
+        $gameDAO = new GameDAO();
+        $searchResults = $gameDAO->searchGame($search, $limit);
+        $res = $res->withJson($searchResults);
+        return $res;
+    }
 }

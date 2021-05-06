@@ -2,6 +2,8 @@
 
 namespace App\DAO;
 
+use PDO;
+
 class GameDAO extends Connection
 {
     public function __construct()
@@ -107,6 +109,22 @@ class GameDAO extends Connection
             . 'LIKE :search OR alt_name_1 LIKE :search OR alt_name_2 LIKE :search) '
             . ' AND plain IS NOT NULL AND active = 1 ORDER BY rating_count DESC LIMIT 10');
         $query->bindValue(':search', $search);
+        $run = $query->execute();
+        $queryResult = $query->fetchAll(\PDO::FETCH_ASSOC);
+        return $queryResult;
+    }
+
+    //retorna array com resultados da busca de jogo por nome
+    public function searchGame($name, $limit)
+    {
+        //caso o termo de pesquisa seja menor q 4 caracteres, utiliza query LIKE termo%
+        //caso tenha 4 caracteres ou mais, utilzia query LIKE %termo%
+        $search = strlen($name) < 4 ? $name . '%' : '%' . $name . '%';
+        $query = $this->pdo->prepare('SELECT id, name, plain, igdb_cover FROM games WHERE (name '
+            . 'LIKE :search OR alt_name_1 LIKE :search OR alt_name_2 LIKE :search) '
+            . ' AND plain IS NOT NULL AND active = 1 ORDER BY rating_count DESC LIMIT :limit');
+        $query->bindValue(':search', $search);
+        $query->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $run = $query->execute();
         $queryResult = $query->fetchAll(\PDO::FETCH_ASSOC);
         return $queryResult;
