@@ -26,6 +26,10 @@ $app->get('/game_deals/{plain}', '\App\Controllers\GameController:getGameDealsBy
 $app->get('/search_name', '\App\Controllers\GameController:getNameSuggestions');
 $app->get('/search_game', '\App\Controllers\GameController:searchGame');
 
+$app->get('/users', '\App\Controllers\UserController:getAllUsers');
+$app->get('/user/{username}', '\App\Controllers\UserController:getUser');
+$app->post('/user', '\App\Controllers\UserController:createUser');
+
 $app->get('/stores', '\App\Controllers\StoreController:getStores');
 $app->get('/deals', '\App\Controllers\DealController:getDeals');
 
