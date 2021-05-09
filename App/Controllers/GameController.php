@@ -9,7 +9,6 @@ use \Slim\Http\Response as Response;
 
 final class GameController
 {
-
     //retorna todos os jogos ativos no bd
     //Ex.: game-oferta-api/games
     public function getGames(Request $req, Response $res, array $args): Response
@@ -75,23 +74,35 @@ final class GameController
         return $res;
     }
 
-    //retorna deals ativas de todos os jogos de acordo com o limite
-    //e o criterio de ordem especificados nos parametros get na url
-    //Ex.: game-oferta-api/games_deals?limit=5&orderby=id_game&order=DESC
-    public function getGamesDeals(Request $req, Response $res, array $args): Response
+    //retorna jogos + deals de acordo com ordenacao e limite informados
+    //caso haja parametro 'term', busca por jogos de nome igual ou semelhante
+    //Ex.: game-oferta-api/games_deals?orderby=rating_count&order=desc
+    //ou game-oferta-api/games_deals?term=gta&limit=5
+    public function getGamesAndDeals(Request $req, Response $res, array $args): Response
     {
+        $games = []; //cria array de jogos selecionados
+        $ids = array(); //cria array de ids dos jogos a serem pesquisados
         $params = $req->getQueryParams(); //recebe parametros get da url
+        //verifica se ha parametros orderby e order, caso contrario utiliza padrao
+        $orderBy = isset($params['orderby']) ? $params['orderby'] : 'rating_count';
+        $order = (isset($params['order']) && strtoupper($params['order']) == 'ASC') ? 'ASC' : 'DESC';
         $limit = 20; //limite de jogos caso parametro nao seja informado
         if (isset($params['limit']) && $params['limit'] > 0 && $params['limit'] <= 20) {
             $limit = $params['limit']; //recebe parametro limit
         }
-        //verifica se ha parametros orderby e order, caso contrario utiliza padrao
-        $orderBy = isset($params['orderby']) ? $params['orderby'] : 'rating_count';
-        $order = (isset($params['order']) && strtoupper($params['order']) == 'ASC') ? 'ASC' : 'DESC';
-        $games = []; //cria array de jogos selecionados
-        $gameDAO = new GameDAO();
-        //recebe do bd um array com ids de jogos que possuem deals ativas conforme limite e criterio de ordem
-        $ids = $gameDAO->getIDsArray($limit, $orderBy, $order);
+        //se houver parametro de busca
+        if (isset($params['term']) && $params['term'] != '') {
+            $search = $params['term']; //recebe o termo de busca
+            $gameDAO = new GameDAO();
+            //busca jogo no bd e retorna ids dos resultados
+            $ids = $gameDAO->searchGame($search, $limit);
+        } else {
+            //retorna deals ativas de todos os jogos de acordo com o limite
+            //e o criterio de ordem especificados nos parametros get na url
+            $gameDAO = new GameDAO();
+            //recebe do bd um array com ids de jogos que possuem deals ativas conforme limite e criterio de ordem
+            $ids = $gameDAO->getIDsArray($limit, $orderBy, $order);
+        }
         $results = $gameDAO->getGamesDealsByIDArray($ids, $orderBy, $order);
         foreach ($results as $result) { //para cada resultado da query
             if (!isset($games[$result['game_plain']])) { //caso game ainda nao esteja no array
@@ -133,21 +144,6 @@ final class GameController
         $gameDAO = new GameDAO();
         $nameSuggestions = $gameDAO->getNameSuggestions($search);
         $res = $res->withJson($nameSuggestions);
-        return $res;
-    }
-
-    //procura jogo pelo nome e retorna resultados
-    public function searchGame(Request $req, Response $res, array $args): Response
-    {
-        $params = $req->getQueryParams(); //recebe parametros get da url
-        $search = $params['term']; //recebe o termo de busca
-        $limit = 20; //limite de jogos caso parametro nao seja informado
-        if (isset($params['limit']) && $params['limit'] > 0 && $params['limit'] <= 20) {
-            $limit = $params['limit']; //recebe parametro limit
-        }
-        $gameDAO = new GameDAO();
-        $searchResults = $gameDAO->searchGame($search, $limit);
-        $res = $res->withJson($searchResults);
         return $res;
     }
 }

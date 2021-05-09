@@ -20,14 +20,13 @@ $app->add(function ($req, $res, $next) {
 //-------- ROTAS ---------------------
 
 $app->get('/games', '\App\Controllers\GameController:getGames');
-$app->get('/game/{plain}', '\App\Controllers\GameController:getGameByPlain');
-$app->get('/games_deals', '\App\Controllers\GameController:getGamesDeals');
+$app->get('/games/{plain}', '\App\Controllers\GameController:getGameByPlain');
+$app->get('/games_deals', '\App\Controllers\GameController:getGamesAndDeals');
 $app->get('/game_deals/{plain}', '\App\Controllers\GameController:getGameDealsByPlain');
 $app->get('/search_name', '\App\Controllers\GameController:getNameSuggestions');
-$app->get('/search_game', '\App\Controllers\GameController:searchGame');
 
 $app->get('/users', '\App\Controllers\UserController:getAllUsers');
-$app->get('/user/{username}', '\App\Controllers\UserController:getUser');
+$app->get('/users/{username}', '\App\Controllers\UserController:getUser');
 $app->post('/user', '\App\Controllers\UserController:createUser');
 
 $app->get('/stores', '\App\Controllers\StoreController:getStores');
