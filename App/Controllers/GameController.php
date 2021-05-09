@@ -80,7 +80,6 @@ final class GameController
     //ou game-oferta-api/games_deals?term=gta&limit=5
     public function getGamesAndDeals(Request $req, Response $res, array $args): Response
     {
-        $games = []; //cria array de jogos selecionados
         $ids = array(); //cria array de ids dos jogos a serem pesquisados
         $params = $req->getQueryParams(); //recebe parametros get da url
         //verifica se ha parametros orderby e order, caso contrario utiliza padrao
@@ -104,7 +103,16 @@ final class GameController
             $ids = $gameDAO->getIDsArray($limit, $orderBy, $order);
         }
         $results = $gameDAO->getGamesDealsByIDArray($ids, $orderBy, $order);
-        foreach ($results as $result) { //para cada resultado da query
+        $finalArray = $this->createGameDealsArray($results); //cria array estruturado de jogos + deals
+        $res = $res->withJson($finalArray); //retorna array
+        return $res;
+    }
+
+    //retorna array estruturado de jogos + deals
+    public function createGameDealsArray($queryResults)
+    {
+        $games = []; //cria array de jogos selecionados
+        foreach ($queryResults as $result) { //para cada resultado da query
             if (!isset($games[$result['game_plain']])) { //caso game ainda nao esteja no array
                 $games[$result['game_plain']] = array( //adiciona game no array com suas informacoes
                     'plain' => $result['game_plain'],
@@ -132,8 +140,7 @@ final class GameController
         foreach ($games as $game) {
             $finalArray[] = $game;
         }
-        $res = $res->withJson($finalArray);
-        return $res;
+        return $finalArray;
     }
 
     //retorna array com sugestoes de auto-complete de nome + plain

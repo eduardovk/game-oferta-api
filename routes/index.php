@@ -29,6 +29,8 @@ $app->get('/users', '\App\Controllers\UserController:getAllUsers');
 $app->get('/users/{username}', '\App\Controllers\UserController:getUser');
 $app->post('/user', '\App\Controllers\UserController:createUser');
 
+$app->get('/wishlists', '\App\Controllers\WishlistController:getWishlists');
+
 $app->get('/stores', '\App\Controllers\StoreController:getStores');
 $app->get('/deals', '\App\Controllers\DealController:getDeals');
 

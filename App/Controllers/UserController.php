@@ -17,7 +17,7 @@ final class UserController
         $params = $req->getQueryParams(); //recebe parametros get da url
         //se only_active = false, retorna tambem users inativos
         $onlyActive = true;
-        if (isset($params['only_active']) && isset($params['only_active']) === 'false') {
+        if (isset($params['only_active']) && $params['only_active'] === 'false') {
             $onlyActive = false;
         }
         $userDAO = new UserDAO();
