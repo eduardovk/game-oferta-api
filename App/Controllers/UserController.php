@@ -58,4 +58,25 @@ final class UserController
         }
         return $res->withJson($msg, $code); //devolve msg e codigo de resposta)
     }
+
+    public function login(Request $req, Response $res, array $args): Response
+    {
+        $data = $req->getParsedBody(); //recebe corpo do post
+        $email = isset($data['email']) ? $data['email'] : false; //recebe email
+        $password = isset($data['password']) ? sha1($data['password']) : false; //recebe password
+        if (!$email || !$password) { //se email ou password nao forem informados
+            $msg = 'E-mail ou senha não informado(s)!';
+            $code = 400; //codigo http 400 (bad request)
+            return $res->withJson($msg, $code); //devolve msg e codigo de resposta)
+        }
+        $userDAO = new UserDAO();
+        $user = $userDAO->authenticateUser($email, $password);
+        if(!$user){ //se nao encontrou usuario
+            $msg = 'E-mail ou senha inválido(s)!';
+            $code = 401; //codigo http 401 (Unauthorized)
+            return $res->withJson($msg, $code); //devolve msg e codigo de resposta)
+        }
+        $res = $res->withJson($user);
+        return $res;
+    }
 }

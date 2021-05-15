@@ -31,6 +31,17 @@ class UserDAO extends Connection
         return $queryResult;
     }
 
+    //confere email e senha e devolve dados do usuario 
+    public function authenticateUser($email, $password){
+        $query = $this->pdo->prepare('SELECT username,email,admin, active '
+            . 'FROM users WHERE email = :email AND password = :password LIMIT 1');
+        $query->bindValue(':email', $email);
+        $query->bindValue(':password', $password);
+        $run = $query->execute();
+        $queryResult = $query->fetch(\PDO::FETCH_ASSOC);
+        return $queryResult;
+    }
+
     //insere user no bd
     public function insertUser($user)
     {
