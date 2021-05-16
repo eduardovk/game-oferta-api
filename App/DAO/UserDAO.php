@@ -23,7 +23,7 @@ class UserDAO extends Connection
     //retorna informacoes do usuario de acordo com o username informado
     public function getUser($username)
     {
-        $query = $this->pdo->prepare('SELECT username,email,admin, active '
+        $query = $this->pdo->prepare('SELECT id,username,email,admin, active '
             . 'FROM users WHERE username = :username LIMIT 1');
         $query->bindValue(':username', $username);
         $run = $query->execute();

@@ -116,4 +116,35 @@ class WishlistDAO extends Connection
         }
         return $wishlistsGames; //retorna array final
     }
+
+    //adiciona jogo a wishlist atraves do id da wishlist e id_game informados
+    public function addToWishlist($idWishlist, $idGame)
+    {
+        $dateTime = date('Y-m-d H:i:s'); //data e hora atual
+        $query = $this->pdo->prepare('INSERT INTO wishlist_games (id_wishlist, id_game, inserted_at) 
+        VALUES (:id_wishlist, :id_game, :inserted_at)');
+        $query->bindValue(':id_wishlist', $idWishlist, \PDO::PARAM_INT);
+        $query->bindValue(':id_game', $idGame, \PDO::PARAM_INT);
+        $query->bindValue(':inserted_at', $dateTime);
+        $run = $query->execute();
+        return $run; //retorna resultado
+    }
+
+    //insere nova wishlist no banco
+    public function insertWishlist($wishlist)
+    {
+        $dateTime = date('Y-m-d H:i:s'); //data e hora atual
+        $query = $this->pdo->prepare('INSERT INTO wishlists (id_user, email, title, description, public, 
+        inserted_at, updated_at, active) VALUES (:id_user, :email, :title, :description, 
+        :public, :inserted_at, NULL, 1)');
+        $query->bindValue(':id_user', $wishlist['id_user'], \PDO::PARAM_INT);
+        $query->bindValue(':email', $wishlist['email']);
+        $query->bindValue(':title', $wishlist['title']);
+        $query->bindValue(':description', $wishlist['description']);
+        $query->bindValue(':public', $wishlist['public'], \PDO::PARAM_INT);
+        $query->bindValue(':inserted_at', $dateTime);
+        $run = $query->execute();
+        $id = $this->pdo->lastInsertId(); //retorna id da wishlist inserida
+        return $id;
+    }
 }

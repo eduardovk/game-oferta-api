@@ -32,6 +32,7 @@ $app->post('/user', '\App\Controllers\UserController:createUser');
 $app->post('/login', '\App\Controllers\UserController:login');
 
 $app->get('/wishlists', '\App\Controllers\WishlistController:getWishlists');
+$app->post('/wishlists', '\App\Controllers\WishlistController:addToWishlist');
 
 $app->get('/stores', '\App\Controllers\StoreController:getStores');
 $app->get('/deals', '\App\Controllers\DealController:getDeals');

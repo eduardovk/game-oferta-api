@@ -5,6 +5,7 @@ namespace App\Controllers;
 use App\DAO\WishlistDAO;
 use App\DAO\GameDAO;
 use App\Controllers\GameController;
+use App\DAO\UserDAO;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use \Slim\Http\Response as Response;
 // use Psr\Http\Message\ResponseInterface as Response;
@@ -78,5 +79,46 @@ final class WishlistController
         $wishlistDAO = new WishlistDAO();
         $wishlist = $wishlistDAO->getWishListsByUser($username, $withGames);
         return $wishlist;
+    }
+
+    //adiciona jogo a wishlist conforme id da wishlist e id_game
+    public function addToWishlist(Request $req, Response $res, array $args): Response
+    {
+        $data = $req->getParsedBody(); //recebe corpo do post
+        $idWishlist = isset($data['id_wishlist']) ? $data['id_wishlist'] : false;
+        $idGame = isset($data['id_game']) ? $data['id_game'] : false;
+        $username = isset($data['username']) ? $data['username'] : false;
+        $code = 400; //codigo http 400 (bad request)
+        $wishlistDAO = new WishlistDAO();
+        if (!$idGame) //id do jogo nao foi informado, retorna  msg de erro e codigo 400 (bad request)
+            return $res->withJson('O ID do jogo não foi informado corretamente!', $code);
+        if (!$idWishlist) { //se o id da wishlist nao foi informado
+            if (!$username) { //username nao informado, retorna  msg de erro e codigo 400 (bad request)
+                return $res->withJson('Não foram informados o username nem a id da wishlist!', $code);
+            } else {
+                //busca as wishlists do usuario
+                $userWishlists = $wishlistDAO->getWishListsByUser($username);
+                if (sizeof($userWishlists) > 0) { //se user possuir wishlists
+                    $idWishlist = $userWishlists[0]['id']; //pega a primeira wishlist do usuario
+                } else { //se user ainda nao possuir nenhuma wishlist
+                    $userDAO = new UserDAO();
+                    $user = $userDAO->getUser($username); //busca informacoes do usuario
+                    $newWishlist = array( //cria nova wishlist
+                        'id_user' => $user['id'],
+                        'email' => $user['email'],
+                        'title' => 'Lista de desejos de ' . $username,
+                        'description' => '',
+                        'public' => 1
+                    );
+                    //insere nova wishlist e recebe o id dela
+                    $idWishlist = $wishlistDAO->insertWishlist($newWishlist);
+                }
+            }
+        }
+        $queryResult = $wishlistDAO->addToWishlist($idWishlist, $idGame); //insere no bd
+        if ($queryResult) //tudo ok, retorna msg de sucesso e codigo 201 (created)
+            return $res->withJson('Jogo adicionado à Wishlist com sucesso!', 201);
+        //erro na query, retorna msg de erro e codigo 500 (server error)
+        return $res->withJson('Erro ao adicionar jogo à Wishlist.', 500);
     }
 }
