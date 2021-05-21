@@ -3,6 +3,7 @@
 namespace App\Controllers;
 
 use App\DAO\GameDAO;
+use App\DAO\WishlistDAO;
 use Psr\Http\Message\ServerRequestInterface as Request;
 use \Slim\Http\Response as Response;
 // use Psr\Http\Message\ResponseInterface as Response;
@@ -76,8 +77,10 @@ final class GameController
 
     //retorna jogos + deals de acordo com ordenacao e limite informados
     //caso haja parametro 'term', busca por jogos de nome igual ou semelhante
+    //caso haja parametro 'username', exibe se o jogo ja esta na wishlist
     //Ex.: game-oferta-api/games_deals?orderby=rating_count&order=desc
     //ou game-oferta-api/games_deals?term=gta&limit=5
+    //ou game-oferta-api/games_deals?term=gta&username=fulano
     public function getGamesAndDeals(Request $req, Response $res, array $args): Response
     {
         $ids = array(); //cria array de ids dos jogos a serem pesquisados
@@ -104,6 +107,11 @@ final class GameController
         }
         $results = $gameDAO->getGamesDealsByIDArray($ids, $orderBy, $order);
         $finalArray = $this->createGameDealsArray($results); //cria array estruturado de jogos + deals
+        //ha parametro de usuario (se user esta logado)
+        if (isset($params['username']) && $params['username'] != '') {
+            //para cada jogo, verifica se esta presente na wishlsit do usuario (caso logado)
+            $finalArray = $this->checkIfOnWishlist($finalArray, $params['username']);
+        }
         $res = $res->withJson($finalArray); //retorna array
         return $res;
     }
@@ -119,6 +127,7 @@ final class GameController
                     'name' => $result['game_name'],
                     'id' => $result['id_game'],
                     'cover' => $result['game_cover'],
+                    'on_wishlist' => false,
                     'deals' => array() //array de ofertas do jogo
                 );
             }
@@ -141,6 +150,24 @@ final class GameController
             $finalArray[] = $game;
         }
         return $finalArray;
+    }
+
+    //adiciona campo indicando se jogo esta presente na wishlist do usuario
+    public function checkIfOnWishlist($gamesArray, $username)
+    {
+        $ids = array(); //cria array de ids dos jogos
+        foreach ($gamesArray as &$game) {
+            $ids[] = $game['id']; //para cada jogo, adiciona id ao array
+        }
+        $wishlistDAO = new WishlistDAO();
+        //verifica quais dos ids de games estao na wishlist do usuario
+        $idsOnWishlist = $wishlistDAO->checkGamesIDArray($ids, $username);
+        foreach($gamesArray as &$game){
+            if(in_array($game['id'], $idsOnWishlist)){
+                $game['on_wishlist'] = true;
+            }
+        }
+        return $gamesArray;
     }
 
     //retorna array com sugestoes de auto-complete de nome + plain

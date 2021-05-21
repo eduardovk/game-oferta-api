@@ -147,4 +147,26 @@ class WishlistDAO extends Connection
         $id = $this->pdo->lastInsertId(); //retorna id da wishlist inserida
         return $id;
     }
+
+    //retorna array de ids e boolean indicando se estao na wishlist do usuario
+    public function checkGamesIDArray($ids, $username)
+    {
+        $idsString = ''; //string de ids para utilizar na query
+        foreach ($ids as $id) { //para cada id do array
+            $idsString .= $id . ','; //adiciona id a string
+        }
+        $idsString = substr($idsString, 0, -1); //remove ultima virgula da string
+        //procura na bd se os jogos informados estao em alguma wishlist do usuario
+        $query = $this->pdo->prepare('SELECT wg.id_game FROM wishlist_games as wg INNER JOIN wishlists AS w ON (wg.id_wishlist = w.id) 
+        INNER JOIN users AS u ON (w.id_user = u.id) WHERE u.username = :username AND wg.id_game IN (' . $idsString . ')');
+        $query->bindValue(':username', $username);
+        $run = $query->execute();
+        $queryResult = $query->fetchAll(\PDO::FETCH_ASSOC);
+        $finalIDArray = array(); //estrutura array
+        foreach ($queryResult as $row) {
+            $finalIDArray[] = $row['id_game'];
+        }
+        //devolve array de ids que estejam na wishlist do usuario
+        return $finalIDArray;
+    }
 }
