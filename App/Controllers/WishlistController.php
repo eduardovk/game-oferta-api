@@ -124,9 +124,9 @@ final class WishlistController
     //remove jogo das wishlists do usuario conforme id_game e username informados
     public function removeFromWishlist(Request $req, Response $res, array $args): Response
     {
-        $data = $req->getParsedBody(); //recebe corpo do post
-        $idGame = isset($data['id_game']) ? $data['id_game'] : false;
-        $username = isset($data['username']) ? $data['username'] : false;
+        $params = $req->getQueryParams(); //recebe parametros get da url
+        $idGame = isset($params['id_game']) ? $params['id_game'] : false;
+        $username = isset($params['username']) ? $params['username'] : false;
         if (!$idGame || !$username) { //id_game ou username nao informados, retorna erro 400 (bad request)
             return $res->withJson('O ID do jogo ou username não foi informado corretamente!', 400);
         }
