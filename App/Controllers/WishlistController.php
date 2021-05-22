@@ -23,6 +23,7 @@ final class WishlistController
         $params = $req->getQueryParams(); //recebe parametros get da url
         //recebe parametro deals
         $withDeals = (isset($params['deals']) && $params['deals'] === 'true') ? true : false;
+        $detailed = (isset($params['detailed']) && $params['detailed'] === 'true') ? true : false;
         $wishlists = null;
         if (isset($params['id']) && $params['id'] != '') { //caso informado id da wishlist
             $wishlists = $this->getWishlist($params['id']); //recebe wishlist conforme id
@@ -53,7 +54,13 @@ final class WishlistController
                 $wishlist['games'] = $gameController->createGameDealsArray($gamesAndDeals);
             }
         }
-        $res = $res->withJson($wishlists);
+        if ($detailed) { //se detailed = true, retorna todos dados das wishlists do usuario + jogos
+            $res = $res->withJson($wishlists);
+        } else if (($withGames || $withDeals) && sizeof($wishlists) > 0) { //se detailed = false, retorna apenas os jogos da primeira wishlist
+            $res = $res->withJson($wishlists[0]['games']);
+        } else{ //caso contrario retorna array vazio
+            $res = $res->withJson(array());
+        }
         return $res;
     }
 
