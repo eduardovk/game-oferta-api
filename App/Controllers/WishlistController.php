@@ -54,11 +54,21 @@ final class WishlistController
                 $wishlist['games'] = $gameController->createGameDealsArray($gamesAndDeals);
             }
         }
+        //para cada game da wishlist, configura campo on_wishlist como true
+        if (sizeof($wishlists) > 0) {
+            foreach ($wishlists as &$wishlist) {
+                if (isset($wishlist['games']) && sizeof($wishlist['games']) > 0) {
+                    foreach ($wishlist['games'] as &$game) {
+                        $game['on_wishlist'] = true;
+                    }
+                }
+            }
+        }
         if ($detailed) { //se detailed = true, retorna todos dados das wishlists do usuario + jogos
             $res = $res->withJson($wishlists);
         } else if (($withGames || $withDeals) && sizeof($wishlists) > 0) { //se detailed = false, retorna apenas os jogos da primeira wishlist
             $res = $res->withJson($wishlists[0]['games']);
-        } else{ //caso contrario retorna array vazio
+        } else { //caso contrario retorna array vazio
             $res = $res->withJson(array());
         }
         return $res;
