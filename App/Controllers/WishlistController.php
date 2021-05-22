@@ -88,13 +88,12 @@ final class WishlistController
         $idWishlist = isset($data['id_wishlist']) ? $data['id_wishlist'] : false;
         $idGame = isset($data['id_game']) ? $data['id_game'] : false;
         $username = isset($data['username']) ? $data['username'] : false;
-        $code = 400; //codigo http 400 (bad request)
         $wishlistDAO = new WishlistDAO();
         if (!$idGame) //id do jogo nao foi informado, retorna  msg de erro e codigo 400 (bad request)
-            return $res->withJson('O ID do jogo não foi informado corretamente!', $code);
+            return $res->withJson('O ID do jogo não foi informado corretamente!', 400);
         if (!$idWishlist) { //se o id da wishlist nao foi informado
             if (!$username) { //username nao informado, retorna  msg de erro e codigo 400 (bad request)
-                return $res->withJson('Não foram informados o username nem a id da wishlist!', $code);
+                return $res->withJson('Não foram informados o username nem a id da wishlist!', 400);
             } else {
                 //busca as wishlists do usuario
                 $userWishlists = $wishlistDAO->getWishListsByUser($username);
@@ -120,5 +119,22 @@ final class WishlistController
             return $res->withJson('Jogo adicionado à Wishlist com sucesso!', 201);
         //erro na query, retorna msg de erro e codigo 500 (server error)
         return $res->withJson('Erro ao adicionar jogo à Wishlist.', 500);
+    }
+
+    //remove jogo das wishlists do usuario conforme id_game e username informados
+    public function removeFromWishlist(Request $req, Response $res, array $args): Response
+    {
+        $data = $req->getParsedBody(); //recebe corpo do post
+        $idGame = isset($data['id_game']) ? $data['id_game'] : false;
+        $username = isset($data['username']) ? $data['username'] : false;
+        if (!$idGame || !$username) { //id_game ou username nao informados, retorna erro 400 (bad request)
+            return $res->withJson('O ID do jogo ou username não foi informado corretamente!', 400);
+        }
+        $wishlistDAO = new WishlistDAO();
+        $queryResult = $wishlistDAO->removeFromWishlist($idGame, $username);
+        if ($queryResult) //tudo ok, retorna msg de sucesso e codigo 200 (OK)
+            return $res->withJson('Jogo removido da Wishlist com sucesso!', 200);
+        //erro na query, retorna msg de erro e codigo 500 (server error)
+        return $res->withJson('Erro ao remover jogo da Wishlist.', 500);
     }
 }

@@ -32,7 +32,8 @@ $app->post('/user', '\App\Controllers\UserController:createUser');
 $app->post('/login', '\App\Controllers\UserController:login');
 
 $app->get('/wishlists', '\App\Controllers\WishlistController:getWishlists');
-$app->post('/wishlists', '\App\Controllers\WishlistController:addToWishlist');
+$app->post('/wishlist_games', '\App\Controllers\WishlistController:addToWishlist');
+$app->delete('/wishlist_games', '\App\Controllers\WishlistController:removeFromWishlist');
 
 $app->get('/stores', '\App\Controllers\StoreController:getStores');
 $app->get('/deals', '\App\Controllers\DealController:getDeals');

@@ -130,6 +130,18 @@ class WishlistDAO extends Connection
         return $run; //retorna resultado
     }
 
+    //remove jogo de todas wishlists do usuario
+    public function removeFromWishlist($idGame, $username)
+    {
+        $query = $this->pdo->prepare('DELETE wg FROM wishlist_games AS wg INNER JOIN wishlists 
+        as w ON (wg.id_wishlist = w.id) INNER JOIN users AS u ON (w.id_user = u.id) 
+        WHERE u.username = :username AND wg.id_game = :id_game');
+        $query->bindValue(':username', $username);
+        $query->bindValue(':id_game', $idGame, \PDO::PARAM_INT);
+        $run = $query->execute();
+        return $run; //retorna resultado
+    }
+
     //insere nova wishlist no banco
     public function insertWishlist($wishlist)
     {
