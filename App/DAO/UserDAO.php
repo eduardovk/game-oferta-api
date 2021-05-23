@@ -34,7 +34,7 @@ class UserDAO extends Connection
     //confere email e senha e devolve dados do usuario 
     public function authenticateUser($email, $password){
         $query = $this->pdo->prepare('SELECT username,email,admin, active '
-            . 'FROM users WHERE email = :email AND password = :password LIMIT 1');
+            . 'FROM users WHERE (email = :email OR username = :email) AND password = :password LIMIT 1');
         $query->bindValue(':email', $email);
         $query->bindValue(':password', $password);
         $run = $query->execute();
