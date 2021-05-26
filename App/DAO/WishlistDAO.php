@@ -11,14 +11,23 @@ class WishlistDAO extends Connection
 
     //retorna todas as wishlists ativas do bd
     //se withGames for true, retorna junto os jogos de cada lista
-    public function getAllWishlists($withGames = false): array
+    public function getAllWishlists($withGames = false, $term = false): array
     {
         if ($withGames) {
+            
+            //verifica se ha termo de busca
+            $searchTerm = $term ? " AND (g.name LIKE :search OR g.alt_name_1 LIKE :search OR g.alt_name_2 LIKE :search) " : "";
             //busca wishlists e os jogos de cada uma
-            $wishlistsItems = $this->pdo->query('SELECT w.*, u.username, g.id as id_game, g.name, g.plain, g.igdb_cover '
+            $query = $this->pdo->prepare('SELECT w.*, u.username, g.id as id_game, g.name, g.plain, g.igdb_cover '
                 . 'FROM wishlists AS w INNER JOIN users as u ON(w.id_user = u.id) LEFT JOIN wishlist_games AS wg ON (w.id = wg.id_wishlist) '
-                . 'LEFT JOIN games AS g ON (wg.id_game = g.id) WHERE w.active = 1 AND u.active = 1 ORDER BY w.id DESC')
-                ->fetchAll(\PDO::FETCH_ASSOC);
+                . 'LEFT JOIN games AS g ON (wg.id_game = g.id) WHERE w.active = 1 AND u.active = 1 ' . $searchTerm . ' ORDER BY w.id DESC');
+            if ($searchTerm) {
+                //caso tenha 4 caracteres ou mais, utilzia query LIKE %termo%
+                $term = strlen($term) < 4 ? $term . '%' : '%' . $term . '%';
+                $query->bindValue(':search', $term);
+            }
+            $run = $query->execute();
+            $wishlistsItems = $query->fetchAll(\PDO::FETCH_ASSOC);
             //estrutura wishlists + jogos de cada uma em um array
             $wishlistsGames = $this->makeWishlistArray($wishlistsItems);
             return $wishlistsGames;
@@ -33,13 +42,20 @@ class WishlistDAO extends Connection
     }
 
     //retorna wishlist por id
-    public function getWishList($id)
+    public function getWishList($id, $term = false)
     {
+        //verifica se ha termo de busca
+        $searchTerm = $term ? " AND (g.name LIKE :search OR g.alt_name_1 LIKE :search OR g.alt_name_2 LIKE :search) " : "";
         //busca pelo id a wishlist e seus jogos
         $query = $this->pdo->prepare('SELECT w.*, u.username, g.id as id_game, g.name, g.plain, g.igdb_cover '
             . 'FROM wishlists AS w INNER JOIN users as u ON (w.id_user = u.id) LEFT JOIN wishlist_games AS wg ON (w.id = wg.id_wishlist) LEFT JOIN games AS g '
-            . 'ON (wg.id_game = g.id) WHERE w.active = 1  AND w.id = :id ORDER BY w.id DESC');
+            . 'ON (wg.id_game = g.id) WHERE w.active = 1  AND w.id = :id ' . $searchTerm . ' ORDER BY w.id DESC');
         $query->bindValue(':id', $id, \PDO::PARAM_INT);
+        if ($searchTerm) {
+            //caso tenha 4 caracteres ou mais, utilzia query LIKE %termo%
+            $term = strlen($term) < 4 ? $term . '%' : '%' . $term . '%';
+            $query->bindValue(':search', $term);
+        }
         $run = $query->execute();
         $wishlistsItems = $query->fetchAll(\PDO::FETCH_ASSOC);
         //estrutura wishlists + jogos de cada uma em um array
@@ -50,15 +66,22 @@ class WishlistDAO extends Connection
 
     //retorna todas as wishlists ativas do usuario
     //se withGames for true, retorna junto os jogos de cada lista
-    public function getWishListsByUser($username, $withGames = false): array
+    public function getWishListsByUser($username, $withGames = false, $term = false): array
     {
         if ($withGames) {
+            //verifica se ha termo de busca
+            $searchTerm = $term ? " AND (g.name LIKE :search OR g.alt_name_1 LIKE :search OR g.alt_name_2 LIKE :search) " : "";
             //busca wishlists e os jogos de cada uma
             $query = $this->pdo->prepare('SELECT w.*, u.username, g.id as id_game, g.name, '
                 . 'g.plain, g.igdb_cover FROM wishlists AS w INNER JOIN users as u ON(w.id_user = u.id) '
                 . 'LEFT JOIN wishlist_games AS wg ON (w.id = wg.id_wishlist) LEFT JOIN games AS g ON '
-                . '(wg.id_game = g.id) WHERE w.active = 1 AND u.active = 1 AND u.username = :username ORDER BY w.id DESC');
+                . '(wg.id_game = g.id) WHERE w.active = 1 AND u.active = 1 AND u.username = :username ' . $searchTerm . ' ORDER BY w.id DESC');
             $query->bindValue(':username', $username);
+            if ($searchTerm) {
+                //caso tenha 4 caracteres ou mais, utilzia query LIKE %termo%
+                $term = strlen($term) < 4 ? $term . '%' : '%' . $term . '%';
+                $query->bindValue(':search', $term);
+            }
             $run = $query->execute();
             $wishlistsItems = $query->fetchAll(\PDO::FETCH_ASSOC);
             //estrutura wishlists + jogos de cada uma em um array

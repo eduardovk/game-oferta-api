@@ -23,18 +23,20 @@ final class WishlistController
         $params = $req->getQueryParams(); //recebe parametros get da url
         //recebe parametro deals
         $withDeals = (isset($params['deals']) && $params['deals'] === 'true') ? true : false;
+        //recebe parametro de busca
+        $term = (isset($params['term']) && $params['term'] != '') ? $params['term'] : false;
         $detailed = (isset($params['detailed']) && $params['detailed'] === 'true') ? true : false;
         $wishlists = null;
         if (isset($params['id']) && $params['id'] != '') { //caso informado id da wishlist
-            $wishlists = $this->getWishlist($params['id']); //recebe wishlist conforme id
+            $wishlists = $this->getWishlist($params['id'], $term); //recebe wishlist conforme id
         } else {
             //se games ou deals = true, retorna junto os jogos de cada wishlist
             $withGames = (isset($params['games']) && $params['games'] === 'true') ? true : false;
             if (isset($params['username']) && $params['username'] != '') { //caso haja parametro de usuario
                 //recebe wishlists do usuario
-                $wishlists = $this->getWishlistsByUser($params['username'], ($withGames || $withDeals));
+                $wishlists = $this->getWishlistsByUser($params['username'], ($withGames || $withDeals), $term);
             } else { //caso nao tenha sido informado usuario
-                $wishlists = $this->getAllWishlists(($withGames || $withDeals)); //recebe todas wishlists
+                $wishlists = $this->getAllWishlists(($withGames || $withDeals), $term); //recebe todas wishlists
             }
         }
         if ($withDeals) { //se deals = true, retorna as deals ativas de cada jogo da wishlist
@@ -75,26 +77,26 @@ final class WishlistController
     }
 
     //retorna todas as wishlists do bd
-    public function getAllWishlists($withGames)
+    public function getAllWishlists($withGames, $term)
     {
         $wishlistDAO = new WishlistDAO();
-        $wishlists = $wishlistDAO->getAllWishlists($withGames);
+        $wishlists = $wishlistDAO->getAllWishlists($withGames, $term);
         return $wishlists;
     }
 
     //retorna a wishlist conforme id informado
-    public function getWishlist($id)
+    public function getWishlist($id, $term)
     {
         $wishlistDAO = new WishlistDAO();
-        $wishlist = $wishlistDAO->getWishList($id);
+        $wishlist = $wishlistDAO->getWishList($id, $term);
         return $wishlist;
     }
 
     //retorna a wishlist conforme username informado
-    public function getWishlistsByUser($username, $withGames)
+    public function getWishlistsByUser($username, $withGames, $term)
     {
         $wishlistDAO = new WishlistDAO();
-        $wishlist = $wishlistDAO->getWishListsByUser($username, $withGames);
+        $wishlist = $wishlistDAO->getWishListsByUser($username, $withGames, $term);
         return $wishlist;
     }
 
