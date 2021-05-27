@@ -49,7 +49,7 @@ final class UserController
         );
         $userDAO = new UserDAO();
         $queryResult = $userDAO->insertUser($user); //insere user no db e recebe resposta
-        $msg = 'Usuário criado com sucesso!';
+        $msg = array('username' => $data['username'], 'email' => $data['email']);
         $code = 201; //codigo http 201 (created)
         //caso insert tenha dado erros
         if (!$queryResult) {
