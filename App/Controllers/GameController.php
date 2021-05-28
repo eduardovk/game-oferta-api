@@ -88,6 +88,8 @@ final class GameController
         //verifica se ha parametros orderby e order, caso contrario utiliza padrao
         $orderBy = isset($params['orderby']) ? $params['orderby'] : 'rating_count';
         $order = (isset($params['order']) && strtoupper($params['order']) == 'ASC') ? 'ASC' : 'DESC';
+        //verifica se ha parametro para filtro de lojas
+        $storeFilter = isset($params['store_filter']) && $params['store_filter'] != 'false' ? $params['store_filter'] : false;
         $limit = 20; //limite de jogos caso parametro nao seja informado
         if (isset($params['limit']) && $params['limit'] > 0 && $params['limit'] <= 20) {
             $limit = $params['limit']; //recebe parametro limit
@@ -97,14 +99,15 @@ final class GameController
             $search = $params['term']; //recebe o termo de busca
             $gameDAO = new GameDAO();
             //busca jogo no bd e retorna ids dos resultados
-            $ids = $gameDAO->searchGame($search, $limit);
+            $ids = $gameDAO->searchGame($search, $limit, $storeFilter);
         } else {
             //retorna deals ativas de todos os jogos de acordo com o limite
             //e o criterio de ordem especificados nos parametros get na url
             $gameDAO = new GameDAO();
             //recebe do bd um array com ids de jogos que possuem deals ativas conforme limite e criterio de ordem
-            $ids = $gameDAO->getIDsArray($limit, $orderBy, $order);
+            $ids = $gameDAO->getIDsArray($limit, $orderBy, $order, $storeFilter);
         }
+        if (!$ids || sizeof($ids) < 1) return $res->withJson(array()); //se nao houver resultados, retorna vazio
         $results = $gameDAO->getGamesDealsByIDArray($ids, $orderBy, $order);
         $finalArray = $this->createGameDealsArray($results); //cria array estruturado de jogos + deals
         //ha parametro de usuario (se user esta logado)
@@ -162,8 +165,8 @@ final class GameController
         $wishlistDAO = new WishlistDAO();
         //verifica quais dos ids de games estao na wishlist do usuario
         $idsOnWishlist = $wishlistDAO->checkGamesIDArray($ids, $username);
-        foreach($gamesArray as &$game){
-            if(in_array($game['id'], $idsOnWishlist)){
+        foreach ($gamesArray as &$game) {
+            if (in_array($game['id'], $idsOnWishlist)) {
                 $game['on_wishlist'] = true;
             }
         }
