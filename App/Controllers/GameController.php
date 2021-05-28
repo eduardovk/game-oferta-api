@@ -140,8 +140,8 @@ final class GameController
                 'id_store' => $result['id_store'],
                 'store_name' => $result['store_name'],
                 'store_plain' => $result['id_itad'],
-                'price_old' => $result['price_old'],
-                'price_new' => $result['price_new'],
+                'price_old' => str_replace('.',',',$result['price_old']),
+                'price_new' => str_replace('.',',',$result['price_new']),
                 'price_cut' => $result['price_cut']
             );
             //insere informacoes da deal no array deals do jogo
