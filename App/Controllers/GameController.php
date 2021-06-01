@@ -90,6 +90,8 @@ final class GameController
         $order = (isset($params['order']) && strtoupper($params['order']) == 'ASC') ? 'ASC' : 'DESC';
         //verifica se ha parametro para filtro de lojas
         $storeFilter = isset($params['store_filter']) && $params['store_filter'] != 'false' ? $params['store_filter'] : false;
+        //verifica se ha parametro de desconto minimo
+        $minDiscount = isset($params['min_discount']) && $params['min_discount'] != '' ? $params['min_discount'] : 0;
         $limit = 20; //limite de jogos caso parametro nao seja informado
         if (isset($params['limit']) && $params['limit'] > 0 && $params['limit'] <= 20) {
             $limit = $params['limit']; //recebe parametro limit
@@ -99,13 +101,13 @@ final class GameController
             $search = $params['term']; //recebe o termo de busca
             $gameDAO = new GameDAO();
             //busca jogo no bd e retorna ids dos resultados
-            $ids = $gameDAO->searchGame($search, $limit, $storeFilter);
+            $ids = $gameDAO->searchGame($search, $limit, $storeFilter, $minDiscount);
         } else {
             //retorna deals ativas de todos os jogos de acordo com o limite
             //e o criterio de ordem especificados nos parametros get na url
             $gameDAO = new GameDAO();
             //recebe do bd um array com ids de jogos que possuem deals ativas conforme limite e criterio de ordem
-            $ids = $gameDAO->getIDsArray($limit, $orderBy, $order, $storeFilter);
+            $ids = $gameDAO->getIDsArray($limit, $orderBy, $order, $storeFilter, $minDiscount);
         }
         if (!$ids || sizeof($ids) < 1) return $res->withJson(array()); //se nao houver resultados, retorna vazio
         $results = $gameDAO->getGamesDealsByIDArray($ids, $orderBy, $order);
