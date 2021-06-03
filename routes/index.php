@@ -22,7 +22,6 @@ $app->add(function ($req, $res, $next) {
 $app->get('/games', '\App\Controllers\GameController:getGames');
 $app->get('/games/{plain}', '\App\Controllers\GameController:getGameByPlain');
 $app->get('/games_deals', '\App\Controllers\GameController:getGamesAndDeals');
-$app->get('/game_deals/{plain}', '\App\Controllers\GameController:getGameDealsByPlain');
 $app->get('/search_name', '\App\Controllers\GameController:getNameSuggestions');
 
 $app->get('/users', '\App\Controllers\UserController:getAllUsers');

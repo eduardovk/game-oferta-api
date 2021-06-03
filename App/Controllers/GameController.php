@@ -32,10 +32,11 @@ final class GameController
     }
 
     //retorna o jogo informado pela plain e suas ofertas ativas
-    //Ex.: game-oferta-api/game_deals/falloutii?all_deals=false
+    //Ex.: game-oferta-api/games_deals?game=falloutii&all_deals=true&group_stores=true
     public function getGameDealsByPlain(Request $req, Response $res, array $args): Response
     {
-        $plain = $args['plain']; //recebe plain como parametro get da url
+        $params = $req->getQueryParams(); //recebe parametros get da url
+        $plain = $params['game']; //recebe plain como parametro get da url
         //array com informacoes do jogo
         $gameDeals =  array(
             'plain' => $plain,
@@ -45,10 +46,10 @@ final class GameController
             'deals' => array() //array de ofertas do jogo
         );
         $gameDAO = new GameDAO();
-        //caso haja parametro all_deals e seja true, retorna todas as deals
-        $params = $req->getQueryParams();
-        $allDeals = false;
+        $allDeals = false; //caso haja parametro all_deals e seja true, retorna todas as deals
         if (isset($params['all_deals']) && $params['all_deals'] == 'true') $allDeals = true;
+        $groupStores = false; //caso haja parametro group_stores e seja true, agroupa as deals por loja
+        if (isset($params['group_stores']) && $params['group_stores'] == 'true') $groupStores = true;
         $gameInfo = $gameDAO->getGameByPlain($plain); //pega informacoes do jogo no bd
         if ($gameInfo) { //se encontrar o jogo no bd
             //preenche array com informacoes do jogo
@@ -57,6 +58,8 @@ final class GameController
             $gameDeals['cover'] = 'https:' . $gameInfo['igdb_cover'];
             $deals = $gameDAO->getGameDealsByPlain($plain, $allDeals); //busca as deals do jogo
             foreach ($deals as $deal) { //para cada deal encontrada
+                $phpdate = strtotime($deal['inserted_at']); //formata data
+                $date = date('d/m/Y H:i:s', $phpdate);
                 //seleciona informacoes relevantes da deal e insere no array
                 $dealInfo = array(
                     'id_deal' => $deal['id'],
@@ -65,10 +68,20 @@ final class GameController
                     'store_plain' => $deal['id_itad'],
                     'price_old' => $deal['price_old'],
                     'price_new' => $deal['price_new'],
-                    'price_cut' => $deal['price_cut']
+                    'price_cut' => $deal['price_cut'],
+                    'active' => $deal['current_deal'] === "1" ? true : false,
+                    'date' => $date
                 );
-                //insere array da deal no array principal
-                array_push($gameDeals['deals'], $dealInfo);
+                if ($groupStores) { //se group_stores = true, agrupa as deals por loja
+                    $store = $deal['id_itad'];
+                    if(!isset($gameDeals['deals'][$store])){
+                        $gameDeals['deals'][$store] = [];
+                    }
+                    array_push($gameDeals['deals'][$store], $dealInfo);
+                } else {
+                    //insere array da deal no array principal
+                    array_push($gameDeals['deals'], $dealInfo);
+                }
             }
         }
         $res = $res->withJson($gameDeals);
@@ -83,8 +96,11 @@ final class GameController
     //ou game-oferta-api/games_deals?term=gta&username=fulano
     public function getGamesAndDeals(Request $req, Response $res, array $args): Response
     {
-        $ids = array(); //cria array de ids dos jogos a serem pesquisados
         $params = $req->getQueryParams(); //recebe parametros get da url
+        if (isset($params['game']) && $params['game'] != '') {
+            return $this->getGameDealsByPlain($req, $res, $args);
+        }
+        $ids = array(); //cria array de ids dos jogos a serem pesquisados
         //verifica se ha parametros orderby e order, caso contrario utiliza padrao
         $orderBy = isset($params['orderby']) ? $params['orderby'] : 'rating_count';
         $order = (isset($params['order']) && strtoupper($params['order']) == 'ASC') ? 'ASC' : 'DESC';
