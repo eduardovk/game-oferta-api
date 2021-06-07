@@ -21,7 +21,7 @@ final class GameController
     }
 
     //retorna informacoes sobre o jogo atraves da plain informada
-    //Ex.: game-oferta-api/game/doom
+    //Ex.: game-oferta-api/games_deals?game=doom
     public function getGameByPlain(Request $req, Response $res, array $args): Response
     {
         $gameDAO = new GameDAO();
@@ -48,6 +48,8 @@ final class GameController
         $gameDAO = new GameDAO();
         $allDeals = false; //caso haja parametro all_deals e seja true, retorna todas as deals
         if (isset($params['all_deals']) && $params['all_deals'] == 'true') $allDeals = true;
+        $allOffers = false; //caso haja parametro all_offers e seja true, retorna apenas as ofertas
+        if (isset($params['all_offers']) && $params['all_offers'] == 'true') $allOffers = true;
         $groupStores = false; //caso haja parametro group_stores e seja true, agroupa as deals por loja
         if (isset($params['group_stores']) && $params['group_stores'] == 'true') $groupStores = true;
         $gameInfo = $gameDAO->getGameByPlain($plain); //pega informacoes do jogo no bd
@@ -56,7 +58,7 @@ final class GameController
             $gameDeals['name'] = $gameInfo['name'];
             $gameDeals['id'] = $gameInfo['id'];
             $gameDeals['cover'] = 'https:' . $gameInfo['igdb_cover'];
-            $deals = $gameDAO->getGameDealsByPlain($plain, $allDeals); //busca as deals do jogo
+            $deals = $gameDAO->getGameDealsByPlain($plain, $allDeals, $allOffers); //busca as deals do jogo
             foreach ($deals as $deal) { //para cada deal encontrada
                 $phpdate = strtotime($deal['inserted_at']); //formata data
                 $date = date('d/m/Y H:i:s', $phpdate);

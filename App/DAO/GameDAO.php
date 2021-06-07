@@ -35,15 +35,19 @@ class GameDAO extends Connection
 
     //retorna o jogo informado pela plain e suas deals
     //caso $allDeals seja true, retorna todas deals
+    //caso $allOffers seja true, retorna todas deals de oferta
     //caso seja false, retorna apenas as deals ativas
-    public function getGameDealsByPlain($plain, $allDeals)
+    public function getGameDealsByPlain($plain, $allDeals, $allOffers)
     {
         //verifica se ha variavel de ambiente para filtrar as lojas
         $where = "";
         if (getenv('FILTER_STORES') && getenv('FILTER_STORES') != "") {
-            $where = "AND id_store IN (" . getenv('FILTER_STORES') . ")";
+            $where = " AND id_store IN (" . getenv('FILTER_STORES') . ") ";
         }
-        $table = $allDeals ? 'game_all_deals' : 'game_deals';  //seleciona entre uma das views
+        if($allOffers){ //se allOffers = true, retorna apenas deals com desconto
+            $where .= ' AND price_cut > 0 ';
+        }
+        $table = ($allDeals || $allOffers) ? 'game_all_deals' : 'game_deals';  //seleciona entre uma das views
         $query = $this->pdo->prepare('SELECT * FROM ' . $table . ' WHERE game_plain = :plain ' . $where);
         $query->bindValue(':plain', $plain);
         $run = $query->execute();
