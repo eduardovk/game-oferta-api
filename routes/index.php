@@ -30,6 +30,8 @@ $app->post('/user', '\App\Controllers\UserController:createUser');
 
 $app->post('/login', '\App\Controllers\UserController:login');
 
+$app->post('/email', '\App\Controllers\MailController:sendEmail');
+
 $app->get('/wishlists', '\App\Controllers\WishlistController:getWishlists');
 $app->post('/wishlist_games', '\App\Controllers\WishlistController:addToWishlist');
 $app->delete('/wishlist_games', '\App\Controllers\WishlistController:removeFromWishlist');
