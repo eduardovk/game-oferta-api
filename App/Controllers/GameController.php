@@ -46,6 +46,8 @@ final class GameController
             'deals' => array() //array de ofertas do jogo
         );
         $gameDAO = new GameDAO();
+        //verifica se ha parametro para filtro de lojas
+        $storeFilter = isset($params['store_filter']) && $params['store_filter'] != 'false' ? $params['store_filter'] : false;
         $allDeals = false; //caso haja parametro all_deals e seja true, retorna todas as deals
         if (isset($params['all_deals']) && $params['all_deals'] == 'true') $allDeals = true;
         $allOffers = false; //caso haja parametro all_offers e seja true, retorna apenas as ofertas
@@ -58,7 +60,7 @@ final class GameController
             $gameDeals['name'] = $gameInfo['name'];
             $gameDeals['id'] = $gameInfo['id'];
             $gameDeals['cover'] = 'https:' . $gameInfo['igdb_cover'];
-            $deals = $gameDAO->getGameDealsByPlain($plain, $allDeals, $allOffers); //busca as deals do jogo
+            $deals = $gameDAO->getGameDealsByPlain($plain, $allDeals, $allOffers, $storeFilter); //busca as deals do jogo
             foreach ($deals as $deal) { //para cada deal encontrada
                 $phpdate = strtotime($deal['inserted_at']); //formata data
                 $date = date('d/m/Y H:i:s', $phpdate);

@@ -37,11 +37,14 @@ class GameDAO extends Connection
     //caso $allDeals seja true, retorna todas deals
     //caso $allOffers seja true, retorna todas deals de oferta
     //caso seja false, retorna apenas as deals ativas
-    public function getGameDealsByPlain($plain, $allDeals, $allOffers)
+    public function getGameDealsByPlain($plain, $allDeals, $allOffers, $storeFilter = false)
     {
         //verifica se ha variavel de ambiente para filtrar as lojas
         $where = "";
-        if (getenv('FILTER_STORES') && getenv('FILTER_STORES') != "") {
+        if($storeFilter && $storeFilter != ""){
+            $where = " AND d.id_store IN (:stores) ";
+        }
+        else if (getenv('FILTER_STORES') && getenv('FILTER_STORES') != "") {
             $where = " AND id_store IN (" . getenv('FILTER_STORES') . ") ";
         }
         if($allOffers){ //se allOffers = true, retorna apenas deals com desconto
