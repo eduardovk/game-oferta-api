@@ -37,22 +37,25 @@ class GameDAO extends Connection
     //caso $allDeals seja true, retorna todas deals
     //caso $allOffers seja true, retorna todas deals de oferta
     //caso seja false, retorna apenas as deals ativas
-    public function getGameDealsByPlain($plain, $allDeals, $allOffers, $storeFilter = false)
+    public function getGameDealsByPlain($plain, $allDeals, $allOffers, $storeFilter)
     {
-        //verifica se ha variavel de ambiente para filtrar as lojas
         $where = "";
-        if($storeFilter && $storeFilter != ""){
-            $where = " AND d.id_store IN (:stores) ";
-        }
-        else if (getenv('FILTER_STORES') && getenv('FILTER_STORES') != "") {
+        $storeFilterArr = false;
+        //configura clausula where de filtro de lojas
+        if ($storeFilter) {
+            $storeFilterArr = explode(',', $storeFilter);
+            $where = $this->createParamsString($storeFilterArr);
+        } else if (getenv('FILTER_STORES') && getenv('FILTER_STORES') != "")
             $where = " AND id_store IN (" . getenv('FILTER_STORES') . ") ";
-        }
-        if($allOffers){ //se allOffers = true, retorna apenas deals com desconto
+        if ($allOffers)  //se allOffers = true, retorna apenas deals com desconto
             $where .= ' AND price_cut > 0 ';
-        }
         $table = ($allDeals || $allOffers) ? 'game_all_deals' : 'game_deals';  //seleciona entre uma das views
         $query = $this->pdo->prepare('SELECT * FROM ' . $table . ' WHERE game_plain = :plain ' . $where);
         $query->bindValue(':plain', $plain);
+        if ($storeFilterArr) {
+            for ($i = 0; $i < sizeof($storeFilterArr); $i++)
+                $query->bindValue(':s' . $i, $storeFilterArr[$i]);
+        }
         $run = $query->execute();
         $game = $query->fetchAll(\PDO::FETCH_ASSOC);
         return $game;
@@ -89,14 +92,22 @@ class GameDAO extends Connection
         //como pdo filtra somente values, verifica manualmente se nao ha tentativa de sql injection
         if (!in_array($orderBy, $allowed)) $orderBy = 'rating_count';
         $query = null;
+        $storeFilterArr = false;
+        $where = "";
         //configura clausula where de filtro de lojas
-        $whereStores = $storeFilter ? " AND d.id_store IN (:stores) " : "";
+        if ($storeFilter) {
+            $storeFilterArr = explode(',', $storeFilter);
+            $where = $this->createParamsString($storeFilterArr);
+        }
         $query = $this->pdo->prepare('SELECT d.id_game  FROM deals AS d INNER JOIN games AS g ON (g.id = d.id_game) 
-        WHERE d.current_deal = 1 ' . $whereStores . ' AND d.price_cut >= :minDiscount GROUP BY d.id_game 
+        WHERE d.current_deal = 1 ' . $where . ' AND d.price_cut >= :minDiscount GROUP BY d.id_game 
         ORDER BY ' . $orderBy . ' ' . $order . ' LIMIT :limit');
-        if ($whereStores != "") $query->bindValue(':stores', $storeFilter);
         $query->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $query->bindValue(':minDiscount', $minDiscount, \PDO::PARAM_INT);
+        if ($storeFilterArr) {
+            for ($i = 0; $i < sizeof($storeFilterArr); $i++)
+                $query->bindValue(':s' . $i, $storeFilterArr[$i]);
+        }
         $run = $query->execute();
         $queryResult = $query->fetchAll(\PDO::FETCH_ASSOC);
         $ids = []; //cria array de ids
@@ -128,16 +139,24 @@ class GameDAO extends Connection
         //caso tenha 4 caracteres ou mais, utilzia query LIKE %termo%
         $search = strlen($name) < 4 ? $name . '%' : '%' . $name . '%';
         $query = null;
+        $where = "";
+        $storeFilterArr = false;
         //configura clausula where de filtro de lojas
-        $whereStores = $storeFilter ? " AND d.id_store IN (:stores) " : "";
+        if ($storeFilter) {
+            $storeFilterArr = explode(',', $storeFilter);
+            $where = $this->createParamsString($storeFilterArr);
+        }
         $query = $this->pdo->prepare('SELECT g.id FROM games AS g INNER JOIN deals AS d ON (g.id = d.id_game)
-            WHERE d.current_deal = 1 ' . $whereStores . ' AND (g.name LIKE :search OR g.alt_name_1 LIKE :search 
+            WHERE d.current_deal = 1 ' . $where . ' AND (g.name LIKE :search OR g.alt_name_1 LIKE :search 
             OR g.alt_name_2 LIKE :search) AND g.plain IS NOT NULL AND g.active = 1 AND d.price_cut >= :minDiscount 
             GROUP BY g.name ORDER BY g.rating_count DESC LIMIT :limit');
-        if ($whereStores != "") $query->bindValue(':stores', $storeFilter);
         $query->bindValue(':search', $search);
         $query->bindValue(':limit', $limit, \PDO::PARAM_INT);
         $query->bindValue(':minDiscount', $minDiscount, \PDO::PARAM_INT);
+        if ($storeFilterArr) {
+            for ($i = 0; $i < sizeof($storeFilterArr); $i++)
+                $query->bindValue(':s' . $i, $storeFilterArr[$i]);
+        }
         $run = $query->execute();
         $queryResult = $query->fetchAll(\PDO::FETCH_ASSOC);
         $ids = array(); //cria array de ids
@@ -145,5 +164,16 @@ class GameDAO extends Connection
             if (isset($id['id'])) $ids[] = $id['id']; //insere id no array
         }
         return $ids;
+    }
+
+    //cria string de parametros para clausula IN do MySQL
+    public function createParamsString($paramsArr)
+    {
+        $params = "";
+        for ($i = 0; $i < sizeof($paramsArr) - 1; $i++)
+            $params .= ":s" . $i . ",";
+        $params .= ":s" . (sizeof($paramsArr) - 1);
+        $where = " AND id_store IN ($params) ";
+        return $where;
     }
 }
