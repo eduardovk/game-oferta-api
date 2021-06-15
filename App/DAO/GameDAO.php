@@ -50,7 +50,8 @@ class GameDAO extends Connection
         if ($allOffers)  //se allOffers = true, retorna apenas deals com desconto
             $where .= ' AND price_cut > 0 ';
         $table = ($allDeals || $allOffers) ? 'game_all_deals' : 'game_deals';  //seleciona entre uma das views
-        $query = $this->pdo->prepare('SELECT * FROM ' . $table . ' WHERE game_plain = :plain ' . $where);
+        $query = $this->pdo->prepare('SELECT * FROM ' . $table . ' WHERE game_plain = :plain ' . $where . ' 
+        ORDER BY inserted_at DESC');
         $query->bindValue(':plain', $plain);
         if ($storeFilterArr) {
             for ($i = 0; $i < sizeof($storeFilterArr); $i++)
