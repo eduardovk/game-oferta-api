@@ -20,19 +20,20 @@ class UserDAO extends Connection
         return $users;
     }
 
-    //retorna informacoes do usuario de acordo com o username informado
-    public function getUser($username)
+    //retorna informacoes do usuario de acordo com o username/id informado
+    public function getUser($identifier, $type = "username")
     {
-        $query = $this->pdo->prepare('SELECT id,username,email,admin, active '
-            . 'FROM users WHERE username = :username LIMIT 1');
-        $query->bindValue(':username', $username);
+        $query = $this->pdo->prepare('SELECT id,username,email,test,admin, active '
+            . 'FROM users WHERE ' . $type . ' = :' . $type . ' LIMIT 1');
+        $query->bindValue(':' . $type, $identifier);
         $run = $query->execute();
         $queryResult = $query->fetch(\PDO::FETCH_ASSOC);
         return $queryResult;
     }
 
     //confere email e senha e devolve dados do usuario 
-    public function authenticateUser($email, $password){
+    public function authenticateUser($email, $password)
+    {
         $query = $this->pdo->prepare('SELECT username,email,admin, active '
             . 'FROM users WHERE (email = :email OR username = :email) AND password = :password LIMIT 1');
         $query->bindValue(':email', $email);

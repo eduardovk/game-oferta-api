@@ -10,33 +10,36 @@ require 'vendor/autoload.php';
 
 class Mailer
 {
-    public function sendEmail()
+    //faz o envio de email e salva log no bd
+    public function sendEmail($body, $email, $subject)
     {
         $mail = new PHPMailer(true);
         try {
+            $result = array('id_user' => null, 'error' => null, 'log' => '');
             $mail->SMPTPDebug = 2;
             $mail->isSMTP();
-            $mail->Host = 'smtp.gmail.com';
+            $mail->Host = getenv('MAIL_HOST');
             $mail->SMTPAuth = true;
             $mail->SMTPSecure = "tls";
-            $mail->Username = "armazenamento.eduardo@gmail.com";
+            $mail->Username = getenv('MAIL');
             $mail->Password = getenv('MAIL_PASSWORD');
             $mail->Port = 587;
 
-            $mail->setFrom('armazenamento.eduardo@gmail.com');
-            $mail->addAddress('eduardo_vk@hotmail.com');
+            $mail->setFrom(getenv('MAIL'));
+            $mail->addAddress($email);
             $mail->isHTML(true);
-            $mail->Subject = "Teste de e-mail!";
-            $mail->Body = "Teste de e-mail PHP Mailer! <strong>by Eduardo</strong>";
-            $mail->AltBody = "Teste de e-mail PHP Mailer! by Eduardo";
+            $mail->Subject = $subject;
+            $mail->Body = $body;
 
-            if ($mail->send()) {
-                return "E-mail enviado com sucesso!";
-            } else {
-                return "Erro ao enviar e-mail.";
+            if (!$mail->send()) { //se houve erro no envio
+                $result["error"] = true;
+                $result["log"] = "Erro ao enviar e-mail.";
             }
+            return $result;
         } catch (Exception $e) {
-            return "Erro ao enviar e-mail: {$mail->ErrorInfo}";
+            $result["error"] = true;
+            $result["log"] = $mail->ErrorInfo;
+            return $result;
         }
     }
 }

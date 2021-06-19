@@ -26,7 +26,7 @@ final class GameController
     {
         $gameDAO = new GameDAO();
         $plain = $args['plain']; //recebe plain como parametro get da url
-        $games = $gameDAO->getGameByPlain($plain);
+        $games = $gameDAO->getGame($plain);
         $res = $res->withJson($games);
         return $res;
     }
@@ -54,7 +54,7 @@ final class GameController
         if (isset($params['all_offers']) && $params['all_offers'] == 'true') $allOffers = true;
         $groupStores = false; //caso haja parametro group_stores e seja true, agroupa as deals por loja
         if (isset($params['group_stores']) && $params['group_stores'] == 'true') $groupStores = true;
-        $gameInfo = $gameDAO->getGameByPlain($plain); //pega informacoes do jogo no bd
+        $gameInfo = $gameDAO->getGame($plain); //pega informacoes do jogo no bd
         if ($gameInfo) { //se encontrar o jogo no bd
             //preenche array com informacoes do jogo
             $gameDeals['name'] = $gameInfo['name'];

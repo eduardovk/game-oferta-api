@@ -20,13 +20,13 @@ class GameDAO extends Connection
         return $games;
     }
 
-    //retorna todos os campos de um jogo a partir de sua plain
-    public function getGameByPlain($plain)
+    //retorna todos os campos de um jogo a partir de sua plain/ID
+    public function getGame($identifier, $type = "plain")
     {
         //seleciona jogo cuja plain nao seja duplicada ou nao conferida
         $query = $this->pdo->prepare('SELECT * FROM games WHERE active = 1 AND '
-            . '(duplicate_plain IS NULL OR duplicate_checked IS NOT NULL) AND plain  = :plain');
-        $query->bindValue(':plain', $plain);
+            . '(duplicate_plain IS NULL OR duplicate_checked IS NOT NULL) AND '.$type.'  = :'.$type);
+        $query->bindValue(':'.$type, $identifier);
         $run = $query->execute();
         $game = $query->fetchAll(\PDO::FETCH_ASSOC);
         if ($game) return $game[0];
