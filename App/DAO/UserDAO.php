@@ -31,6 +31,19 @@ class UserDAO extends Connection
         return $queryResult;
     }
 
+    //verifica se usuario ou email ja existem
+    public function alreadyExists($email, $username)
+    {
+        $query = $this->pdo->prepare('SELECT * FROM users WHERE email = :email 
+        OR username = :username LIMIT 1');
+        $query->bindValue(':email', $email);
+        $query->bindValue(':username', $username);
+        $run = $query->execute();
+        $queryResult = $query->fetch(\PDO::FETCH_ASSOC);
+        if ($queryResult != null && sizeof($queryResult) > 0) return true;
+        return false;
+    }
+
     //confere email e senha e devolve dados do usuario 
     public function authenticateUser($email, $password)
     {

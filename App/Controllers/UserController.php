@@ -48,13 +48,21 @@ final class UserController
             'inserted_at' => date('Y-m-d H:i:s') //Formata data e hora atual
         );
         $userDAO = new UserDAO();
-        $queryResult = $userDAO->insertUser($user); //insere user no db e recebe resposta
-        $msg = array('username' => $data['username'], 'email' => $data['email']);
-        $code = 201; //codigo http 201 (created)
-        //caso insert tenha dado erros
-        if (!$queryResult) {
-            $msg = 'Erro ao inserir usuário';
-            $code = 500; //codigo http 500 (server error)
+        //verifica se email ou usuario ja existem no bd
+        $alreadyExists = $userDAO->alreadyExists($user['email'], $user['username']);
+        //caso email ou usuario ja existam
+        if ($alreadyExists) {
+            $msg = 'Erro: Nome de usuário ou E-mail já existem!';
+            $code = 409; //codigo http 409 (recurso duplicado)
+        } else {
+            $queryResult = $userDAO->insertUser($user); //insere user no db e recebe resposta
+            $msg = array('username' => $data['username'], 'email' => $data['email']);
+            $code = 201; //codigo http 201 (created)
+            //caso insert tenha dado erros
+            if (!$queryResult) {
+                $msg = 'Erro ao inserir usuário';
+                $code = 500; //codigo http 500 (server error)
+            }
         }
         return $res->withJson($msg, $code); //devolve msg e codigo de resposta)
     }
@@ -71,7 +79,7 @@ final class UserController
         }
         $userDAO = new UserDAO();
         $user = $userDAO->authenticateUser($email, $password);
-        if(!$user){ //se nao encontrou usuario
+        if (!$user) { //se nao encontrou usuario
             $msg = 'E-mail ou senha inválido(s)!';
             $code = 401; //codigo http 401 (Unauthorized)
             return $res->withJson($msg, $code); //devolve msg e codigo de resposta)
