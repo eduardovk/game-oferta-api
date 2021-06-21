@@ -73,12 +73,13 @@ final class GameController
                     'price_old' => $deal['price_old'],
                     'price_new' => $deal['price_new'],
                     'price_cut' => $deal['price_cut'],
+                    'url' => isset($deal['url']) ? $deal['url'] : null,
                     'active' => $deal['current_deal'] === "1" ? true : false,
                     'date' => $date
                 );
                 if ($groupStores) { //se group_stores = true, agrupa as deals por loja
                     $store = $deal['id_itad'];
-                    if(!isset($gameDeals['deals'][$store])){
+                    if (!isset($gameDeals['deals'][$store])) {
                         $gameDeals['deals'][$store] = [];
                     }
                     array_push($gameDeals['deals'][$store], $dealInfo);
@@ -164,7 +165,8 @@ final class GameController
                 'store_plain' => $result['id_itad'],
                 'price_old' => $result['price_old'],
                 'price_new' => $result['price_new'],
-                'price_cut' => $result['price_cut']
+                'price_cut' => $result['price_cut'],
+                'url' => isset($result['url']) ? $result['url'] : null
             );
             //insere informacoes da deal no array deals do jogo
             array_push($games[$result['game_plain']]['deals'], $dealInfo);
