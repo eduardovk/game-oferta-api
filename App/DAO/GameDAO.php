@@ -25,8 +25,8 @@ class GameDAO extends Connection
     {
         //seleciona jogo cuja plain nao seja duplicada ou nao conferida
         $query = $this->pdo->prepare('SELECT * FROM games WHERE active = 1 AND '
-            . '(duplicate_plain IS NULL OR duplicate_checked IS NOT NULL) AND '.$type.'  = :'.$type);
-        $query->bindValue(':'.$type, $identifier);
+            . '(duplicate_plain IS NULL OR duplicate_checked IS NOT NULL) AND ' . $type . '  = :' . $type);
+        $query->bindValue(':' . $type, $identifier);
         $run = $query->execute();
         $game = $query->fetchAll(\PDO::FETCH_ASSOC);
         if ($game) return $game[0];
@@ -87,18 +87,27 @@ class GameDAO extends Connection
     }
 
     //retorna um array com ids de jogos que possuem deals ativas conforme limite e criterio de ordem 
-    public function getIDsArray($limit, $orderBy, $order, $storeFilter, $minDiscount)
+    public function getIDsArray($limit, $orderBy, $order, $storeFilter, $minDiscount, $priceRange)
     {
         $allowed = array('id_game', 'rating_count'); //valores de orderby permitidos
         //como pdo filtra somente values, verifica manualmente se nao ha tentativa de sql injection
         if (!in_array($orderBy, $allowed)) $orderBy = 'rating_count';
         $query = null;
         $storeFilterArr = false;
+        $minPrice = null;
+        $maxPrice = null;
         $where = "";
         //configura clausula where de filtro de lojas
         if ($storeFilter) {
             $storeFilterArr = explode(',', $storeFilter);
             $where = $this->createParamsString($storeFilterArr);
+        }
+        //verifica se ha parametro de faixa de preco
+        if ($priceRange) {
+            $priceRangeArr = explode(',', $priceRange);
+            $minPrice = $priceRangeArr[0];
+            $maxPrice = $priceRangeArr[1];
+            $where .= ' AND d.price_new >= :minPrice AND d.price_new <= :maxPrice ';
         }
         $query = $this->pdo->prepare('SELECT d.id_game  FROM deals AS d INNER JOIN games AS g ON (g.id = d.id_game) 
         WHERE d.current_deal = 1 ' . $where . ' AND d.price_cut >= :minDiscount GROUP BY d.id_game 
@@ -108,6 +117,10 @@ class GameDAO extends Connection
         if ($storeFilterArr) {
             for ($i = 0; $i < sizeof($storeFilterArr); $i++)
                 $query->bindValue(':s' . $i, $storeFilterArr[$i]);
+        }
+        if ($priceRange) {
+            $query->bindValue(':minPrice', $minPrice, \PDO::PARAM_INT);
+            $query->bindValue(':maxPrice', $maxPrice, \PDO::PARAM_INT);
         }
         $run = $query->execute();
         $queryResult = $query->fetchAll(\PDO::FETCH_ASSOC);
@@ -134,7 +147,7 @@ class GameDAO extends Connection
     }
 
     //retorna array de ids do resultado da busca de jogo por nome
-    public function searchGame($name, $limit, $storeFilter, $minDiscount)
+    public function searchGame($name, $limit, $storeFilter, $minDiscount, $priceRange)
     {
         //caso o termo de pesquisa seja menor q 4 caracteres, utiliza query LIKE termo%
         //caso tenha 4 caracteres ou mais, utilzia query LIKE %termo%
@@ -142,10 +155,19 @@ class GameDAO extends Connection
         $query = null;
         $where = "";
         $storeFilterArr = false;
+        $minPrice = null;
+        $maxPrice = null;
         //configura clausula where de filtro de lojas
         if ($storeFilter) {
             $storeFilterArr = explode(',', $storeFilter);
             $where = $this->createParamsString($storeFilterArr);
+        }
+        //verifica se ha parametro de faixa de preco
+        if ($priceRange) {
+            $priceRangeArr = explode(',', $priceRange);
+            $minPrice = $priceRangeArr[0];
+            $maxPrice = $priceRangeArr[1];
+            $where .= ' AND d.price_new >= :minPrice AND d.price_new <= :maxPrice ';
         }
         $query = $this->pdo->prepare('SELECT g.id FROM games AS g INNER JOIN deals AS d ON (g.id = d.id_game)
             WHERE d.current_deal = 1 ' . $where . ' AND (g.name LIKE :search OR g.alt_name_1 LIKE :search 
@@ -157,6 +179,10 @@ class GameDAO extends Connection
         if ($storeFilterArr) {
             for ($i = 0; $i < sizeof($storeFilterArr); $i++)
                 $query->bindValue(':s' . $i, $storeFilterArr[$i]);
+        }
+        if ($priceRange) {
+            $query->bindValue(':minPrice', $minPrice, \PDO::PARAM_INT);
+            $query->bindValue(':maxPrice', $maxPrice, \PDO::PARAM_INT);
         }
         $run = $query->execute();
         $queryResult = $query->fetchAll(\PDO::FETCH_ASSOC);
