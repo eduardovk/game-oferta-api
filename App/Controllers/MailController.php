@@ -46,7 +46,8 @@ final class MailController
                 $priceOld = str_replace('.', ',', $deal['price_old']);
                 $priceNew = str_replace('.', ',', $deal['price_new']);
                 $shop = $deal['shop']['name'];
-                $message .= '<li><strong>' . $shop . '</strong>: de R$' . $priceOld . ' por <strong>R$' . $priceNew . ' [<span style="color:green">-' . $deal['price_cut'] . '%</span>]</strong></li>';
+                $message .= '<li><strong><a href="' . $deal['url'] . '" target="_blank">' . $shop . '</a></strong>: de R$' . $priceOld
+                    . ' por <strong>R$' . $priceNew . ' [<span style="color:green">-' . $deal['price_cut'] . '%</span>]</strong></li>';
             }
             $message .= "</ul>";
         }
