@@ -144,6 +144,39 @@ final class GameController
         return $res;
     }
 
+
+    //retorna 5 jogos mais procurados, 5 jogos temporariamente gratuitos, 5 jogos recentes, 5 jogos free to play
+    public function getHomePageGames(Request $req, Response $res, array $args): Response
+    {
+        $username = isset($params['username']) && $params['username'] != '' ? $params['username'] : false;
+        $gameDAO = new GameDAO();
+        $gamesTypesIDs = $gameDAO->getHomePageGames(); //TODO CRIAR METODO GETHOMEPAGEGAMES
+        foreach ($gamesTypesIDs as &$typeIDs) { //para cada categoria e seus ids (ex.: jogos recentes > 34, 657, 4356)
+            $gamesDeals = $gameDAO->getGamesDealsByIDArray($typeIDs, 'rating_count', 'DESC'); //procura as deals e info dos jogos
+            $typeIDs = $this->createGameDealsArray($gamesDeals); //cria array estruturado de jogos + deals
+            if ($username) //para cada jogo, verifica se esta presente na wishlsit do usuario (caso logado)
+                $typeIDs = $this->checkIfOnWishlist($typeIDs, $username);
+        }
+        $res = $res->withJson($gamesTypesIDs); //retorna array
+        return $res;
+    }
+
+
+    //recebe sinal da Engine para atualizar jogos da homepage 
+    //(5 mais desejados, 5 temporariamente grauitos, 5 recentess, 5 free to play)
+    public function updateHomePageGames(Request $req, Response $res, array $args): Response
+    {
+        $gameDAO = new GameDAO();
+        $result = $gameDAO->updateHomePageGames();
+        $msg = $result;
+        $code = 200;
+        if (!$result) {
+            $msg = "Erro ao atualizar jogos da homepage!";
+            $code = 500;
+        }
+        return $res->withJson($msg, $code);
+    }
+
     //retorna array estruturado de jogos + deals
     public function createGameDealsArray($queryResults)
     {

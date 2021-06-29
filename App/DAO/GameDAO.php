@@ -131,6 +131,63 @@ class GameDAO extends Connection
         return $ids;
     }
 
+    //recebe sinal da Engine para atualizar jogos da homepage 
+    //(5 mais desejados, 5 temporariamente grauitos, 5 recentess, 5 free to play)
+    public function updateHomePageGames()
+    {
+        $gameIDArray = array();
+        //5 mais desejados
+        $gameIDArray['top_5'] = $this->getIDsArray(5, 'rating_count', 'DESC', false, 0, '0,999');
+        //todo 5 temp gratuitos
+        $gameIDArray['top_free'] = $this->getIDsArray(5, 'rating_count', 'DESC', false, 100, '0,0');
+        //todo 5 recentes
+        $gameIDArray['top_recent'] = $this->getIDsArray(5, 'id_game', 'DESC', false, 0, '0,999');
+        //todo 5 free2play
+        $gameIDArray['top_f2p'] = $this->getIDsArray(5, 'rating_count', 'DESC', false, 0, '0,0');
+
+        $currentHomePage = $this->getHomePageGames();
+        if ($currentHomePage != $gameIDArray) {
+            $gameIDStringArray = array(); //array de strings de ids
+            //junta os ids em strings e adiciona ao array
+            foreach ($gameIDArray as $type => $ids) {
+                $idString =  '';
+                foreach ($ids as $id)
+                    $idString .= $id . ",";
+                if (substr($idString, -1) == ',') $idString = substr($idString, 0, -1);
+                $gameIDStringArray[$type] = $idString;
+            }
+            $dateTime = date('Y-m-d H:i:s'); //data e hora atual
+            $query = $this->pdo->prepare('INSERT INTO homepage_games (top_5, top_free, top_recent, top_f2p, inserted_at) 
+        VALUES (:top_5, :top_free, :top_recent, :top_f2p, :inserted_at)');
+            $query->bindValue('top_5', $gameIDStringArray['top_5']);
+            $query->bindValue('top_free', $gameIDStringArray['top_free']);
+            $query->bindValue('top_recent', $gameIDStringArray['top_recent']);
+            $query->bindValue('top_f2p', $gameIDStringArray['top_f2p']);
+            $query->bindValue('inserted_at', $dateTime);
+            $run = $query->execute();
+            if ($run) return $gameIDArray;
+            return false;
+        }
+        return $gameIDArray;
+    }
+
+    //retorna do bd array de tipos e ids dos jogos da homepage
+    public function getHomePageGames()
+    {
+        $query = $this->pdo->prepare('SELECT top_5, top_free, top_recent, top_f2p 
+        FROM homepage_games ORDER BY id DESC limit 1');
+        $run = $query->execute();
+        $result = $query->fetch(\PDO::FETCH_ASSOC);
+        $gamesIDsArray = array();
+        if ($result && sizeof($result) > 0) {
+            foreach ($result as $type => $idString) {
+                $idsArr = explode(',', $idString);
+                $gamesIDsArray[$type] = $idsArr;
+            }
+        }
+        return $gamesIDsArray;
+    }
+
     //retorna um array com sugestoes de auto-complete de nomes + plains
     public function getNameSuggestions($search)
     {
