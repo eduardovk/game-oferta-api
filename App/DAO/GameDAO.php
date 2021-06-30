@@ -132,18 +132,18 @@ class GameDAO extends Connection
     }
 
     //recebe sinal da Engine para atualizar jogos da homepage 
-    //(5 mais desejados, 5 temporariamente grauitos, 5 recentess, 5 free to play)
+    //(6 mais desejados, 6 temporariamente grauitos, 6 recentess, 6 free to play)
     public function updateHomePageGames()
     {
         $gameIDArray = array();
-        //5 mais desejados
-        $gameIDArray['top_5'] = $this->getIDsArray(5, 'rating_count', 'DESC', false, 0, '0,999');
-        //todo 5 temp gratuitos
-        $gameIDArray['top_free'] = $this->getIDsArray(5, 'rating_count', 'DESC', false, 100, '0,0');
-        //todo 5 recentes
-        $gameIDArray['top_recent'] = $this->getIDsArray(5, 'id_game', 'DESC', false, 0, '0,999');
-        //todo 5 free2play
-        $gameIDArray['top_f2p'] = $this->getIDsArray(5, 'rating_count', 'DESC', false, 0, '0,0');
+        //6 mais desejados
+        $gameIDArray['top_games'] = $this->getIDsArray(6, 'rating_count', 'DESC', false, 0, '0,999');
+        //6 temp gratuitos
+        $gameIDArray['top_free'] = $this->getIDsArray(6, 'rating_count', 'DESC', false, 100, '0,0');
+        //6 recentes
+        $gameIDArray['top_recent'] = $this->getIDsArray(6, 'id_game', 'DESC', false, 0, '0,999');
+        //6 free2play
+        $gameIDArray['top_f2p'] = $this->getIDsArray(6, 'rating_count', 'DESC', false, 0, '0,0');
 
         $currentHomePage = $this->getHomePageGames();
         if ($currentHomePage != $gameIDArray) {
@@ -157,9 +157,9 @@ class GameDAO extends Connection
                 $gameIDStringArray[$type] = $idString;
             }
             $dateTime = date('Y-m-d H:i:s'); //data e hora atual
-            $query = $this->pdo->prepare('INSERT INTO homepage_games (top_5, top_free, top_recent, top_f2p, inserted_at) 
-        VALUES (:top_5, :top_free, :top_recent, :top_f2p, :inserted_at)');
-            $query->bindValue('top_5', $gameIDStringArray['top_5']);
+            $query = $this->pdo->prepare('INSERT INTO homepage_games (top_games, top_free, top_recent, top_f2p, inserted_at) 
+        VALUES (:top_games, :top_free, :top_recent, :top_f2p, :inserted_at)');
+            $query->bindValue('top_games', $gameIDStringArray['top_games']);
             $query->bindValue('top_free', $gameIDStringArray['top_free']);
             $query->bindValue('top_recent', $gameIDStringArray['top_recent']);
             $query->bindValue('top_f2p', $gameIDStringArray['top_f2p']);
@@ -174,7 +174,7 @@ class GameDAO extends Connection
     //retorna do bd array de tipos e ids dos jogos da homepage
     public function getHomePageGames()
     {
-        $query = $this->pdo->prepare('SELECT top_5, top_free, top_recent, top_f2p 
+        $query = $this->pdo->prepare('SELECT top_games, top_free, top_recent, top_f2p 
         FROM homepage_games ORDER BY id DESC limit 1');
         $run = $query->execute();
         $result = $query->fetch(\PDO::FETCH_ASSOC);
