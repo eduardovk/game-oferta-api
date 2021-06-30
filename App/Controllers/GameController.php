@@ -148,6 +148,7 @@ final class GameController
     //retorna 6 jogos mais procurados, 6 jogos temporariamente gratuitos, 6 jogos recentes, 6 jogos free to play
     public function getHomePageGames(Request $req, Response $res, array $args): Response
     {
+        $params = $req->getQueryParams(); //recebe parametros get da url
         $username = isset($params['username']) && $params['username'] != '' ? $params['username'] : false;
         $gameDAO = new GameDAO();
         $gamesTypesIDs = $gameDAO->getHomePageGames(); //TODO CRIAR METODO GETHOMEPAGEGAMES
