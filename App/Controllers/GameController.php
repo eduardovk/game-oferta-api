@@ -145,7 +145,7 @@ final class GameController
     }
 
 
-    //retorna 6 jogos mais procurados, 6 jogos temporariamente gratuitos, 6 jogos recentes, 6 jogos free to play
+    //retorna 6 ofertas em destaque, 6 jogos temporariamente gratuitos, 6 jogos recentes, 6 jogos free to play
     public function getHomePageGames(Request $req, Response $res, array $args): Response
     {
         $params = $req->getQueryParams(); //recebe parametros get da url
@@ -164,7 +164,7 @@ final class GameController
 
 
     //recebe sinal da Engine para atualizar jogos da homepage 
-    //(6 mais desejados, 6 temporariamente grauitos, 6 recentess, 6 free to play)
+    //(6 destaques, 6 temporariamente grauitos, 6 recentess, 6 free to play)
     public function updateHomePageGames(Request $req, Response $res, array $args): Response
     {
         $gameDAO = new GameDAO();

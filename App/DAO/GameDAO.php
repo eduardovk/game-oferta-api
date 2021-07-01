@@ -132,12 +132,17 @@ class GameDAO extends Connection
     }
 
     //recebe sinal da Engine para atualizar jogos da homepage 
-    //(6 mais desejados, 6 temporariamente grauitos, 6 recentess, 6 free to play)
+    //(6 destaques, 6 temporariamente grauitos, 6 recentess, 6 free to play)
     public function updateHomePageGames()
     {
         $gameIDArray = array();
-        //6 mais desejados
-        $gameIDArray['top_games'] = $this->getIDsArray(6, 'rating_count', 'DESC', false, 0, '0,999');
+        $gameIDArray['top_games'] = array();
+        //6 ofertas em destaque
+        $cut = 75; //desconto minimo
+        while(sizeof($gameIDArray['top_games']) < 6){ //vai baixando o desconto minimo caso nao encontre jogos suficientes
+            $gameIDArray['top_games'] = $this->getIDsArray(6, 'rating_count', 'DESC', false, $cut, '40,999');
+            $cut = $cut - 5;
+        }
         //6 temp gratuitos
         $gameIDArray['top_free'] = $this->getIDsArray(6, 'rating_count', 'DESC', false, 100, '0,0');
         //6 recentes
